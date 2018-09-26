@@ -173,7 +173,7 @@ class bug2():
                 self.rotate(degrees(angle))
     
             self.move()
-            print("M-Line complete")
+        print("M-Line complete")
         
         
     def circumnavigate(self, direction=1):
@@ -191,9 +191,11 @@ class bug2():
             side_dist = self.range_left
                
         while side_dist > (object_distance + self.linear_tolerance) and not rospy.is_shutdown():
+            print("ROTATING")
             self.rotate(direction * self.unit_rotation)
             
         while not rospy.is_shutdown():
+            print("_ _ _")
             (position, rotation) = self.get_odom()
             
             # Circumnavigate other way if at same point
