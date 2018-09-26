@@ -13,7 +13,7 @@ class bug2():
 
         self.vel_pub = rospy.Publisher('cmd_vel_mux/input/navi', Twist, queue_size=1)
 
-        self.scan_sub = rospy.Subscriber('scan', LaserScan, self.scan_callback)
+        self.scan_sub = rospy.Subscriber('scan', LaserScan, self.is_object_encountered)
         
 
         self.rate = 20
@@ -105,7 +105,7 @@ class bug2():
         
         cmd = Twist()
         self.vel_pub.publish(cmd)
-        rospy.sleep(1)
+        rospy.sleep(0.1)
     
     def rotate(self, angle):
         # Get the starting position values     
@@ -123,13 +123,9 @@ class bug2():
         if angle < 0:
             cmd.angular.z *= -1
     
-        #print("ROTATE!!!!!")
-        #print(abs(turn_angle + self.angular_tolerance))
-        #print(radians(angle))
     
         while abs(turn_angle + self.angular_tolerance) < abs(radians(angle)) and not rospy.is_shutdown():
             # Publish the Twist message and sleep 1 cycle   
-            #print("WHILE")
             self.vel_pub.publish(cmd)
             self.r.sleep()
         
@@ -149,7 +145,7 @@ class bug2():
 
     def follow_m_line(self):
         # Get the starting position and rotation values
-        while not rospy.is_shutdown():
+        while not is_object_encountered and not rospy.is_shutdown():
             (position, rotation) = self.get_odom()
 
             # Goal is (10, 0, 0)
@@ -159,7 +155,20 @@ class bug2():
 
             self.rotate(degrees(angle))
     
-            self.move(1)
+            self.move(self.linear_speed / self.rate)
+            
+        print("ENCOUNTERED")
+            
+    def is_object_encountered(self, msg):
+        if min(msg.ranges) < 0.75:
+            return True
+        else:
+            return False
+        
+        
+        
+        
+            
     
 if __name__ == '__main__':
     bug2()
