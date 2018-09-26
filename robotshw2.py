@@ -139,7 +139,7 @@ class bug2():
         if angle < 0:
             cmd.angular.z *= -1
     
-        print("Left: {} \t Right: {}".format(abs(turn_angle + self.angular_tolerance), abs(radians(angle)))
+        print("Left: {} \t Right: {}".format(abs(turn_angle + self.angular_tolerance), abs(radians(angle))))
         while abs(turn_angle + self.angular_tolerance) < abs(radians(angle)) and not rospy.is_shutdown():
             # Publish the Twist message and sleep 1 cycle   
             #print("WHILE")
