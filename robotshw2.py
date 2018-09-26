@@ -3,7 +3,7 @@ import rospy
 import tf
 from geometry_msgs.msg import Twist, Point, Quaternion
 from sensor_msgs.msg import LaserScan
-from math import radians, copysign, sqrt, pow, pi, atan2
+from math import radians, degrees, copysign, sqrt, pow, pi, atan2
 from rbx1_nav.transform_utils import quat_to_angle, normalize_angle
 
 vel_pub = rospy.Publisher('cmd_vel_mux/input/navi', Twist, queue_size=1)
@@ -143,7 +143,7 @@ def follow_m_line():
     #rotate(angle)
     angle = -rotation + atan2(y, x)
     print(angle)
-    rotate(angle)
+    rotate(degrees(angle))
     move(1)
     
     
