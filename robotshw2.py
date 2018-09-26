@@ -145,7 +145,7 @@ class bug2():
 
     def follow_m_line(self):
         # Get the starting position and rotation values
-        while not is_object_encountered and not rospy.is_shutdown():
+        while not self.is_object_encountered() and not rospy.is_shutdown():
             (position, rotation) = self.get_odom()
 
             # Goal is (10, 0, 0)
