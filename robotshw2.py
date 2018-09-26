@@ -116,9 +116,12 @@ def rotate(angle):
     vel_pub.publish(cmd)
     rospy.sleep(1)
 
-move(1)
+move(0.5)
 rotate(90)
-move(1)
+move(0.5)
+rotate(-90)
+move(0.5)
+move(-1.0)
 
 
 #    (position, rotation) = self.get_odom()
