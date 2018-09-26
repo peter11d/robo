@@ -63,6 +63,7 @@ class bug2():
         self.range_left = msg.ranges[-1]
         self.range_center = msg.ranges[len(msg.ranges)//2]
         self.range_right = msg.ranges[0]
+        print(self.range_center)
     
     def get_odom(self):
         # Get the current transform between the odom and base frames
