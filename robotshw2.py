@@ -140,7 +140,6 @@ class bug2():
        
         cmd = Twist()
         self.vel_pub.publish(cmd)
-        rospy.sleep(1)
 
 
     def follow_m_line(self):
