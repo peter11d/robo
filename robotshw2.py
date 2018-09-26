@@ -28,8 +28,8 @@ class bug2():
         self.linear_tolerance = rospy.get_param("~linear_speed", 0.05) 
         self.angular_speed = rospy.get_param("~angular_speed", 0.8)      # radians per second
         self.angular_tolerance = rospy.get_param("~angular_tolerance", radians(1)) # degrees to radians
-        self.unit_distance = 3 * self.linear_speed / self.rate
-        self.unit_rotation = 2 * self.angular_speed
+        self.unit_distance = 8 * self.linear_speed / self.rate
+        self.unit_rotation = 15 * self.angular_speed
 
         state_change_time = rospy.Time.now()
 
@@ -123,7 +123,6 @@ class bug2():
         if angle is None:
             angle = self.unit_rotation
         
-        print("Angle: {}".format(angle))
         # Get the starting position values     
         (position, rotation) = self.get_odom()
     
@@ -139,7 +138,6 @@ class bug2():
         if angle < 0:
             cmd.angular.z *= -1
     
-        print("Left: {} \t Right: {}".format(abs(turn_angle + self.angular_tolerance), abs(radians(angle))))
         while abs(turn_angle + self.angular_tolerance) < abs(radians(angle)) and not rospy.is_shutdown():
             # Publish the Twist message and sleep 1 cycle   
             #print("WHILE")
@@ -194,8 +192,12 @@ class bug2():
         while side_dist > (object_distance + self.linear_tolerance) and not rospy.is_shutdown():
             print("ROTATING")
             self.rotate(direction * self.unit_rotation)
-            print(direction * self.unit_rotation)
             rospy.sleep(0.1)
+            
+            if (direction == 1):
+                side_dist = self.range_right
+            else:
+                side_dist = self.range_left
             
         while not rospy.is_shutdown():
             print("_ _ _")
