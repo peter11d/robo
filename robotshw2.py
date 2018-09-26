@@ -17,10 +17,10 @@ def scan_callback(msg):
     g_range_ahead = min(msg.ranges)
     print(g_range_ahead)
     
-def get_odom(self):
+def get_odom():
     # Get the current transform between the odom and base frames
     try:
-        (trans, rot)  = self.tf_listener.lookupTransform(self.odom_frame, self.base_frame, rospy.Time(0))
+        (trans, rot)  = tf_listener.lookupTransform(odom_frame, base_frame, rospy.Time(0))
     except (tf.Exception, tf.ConnectivityException, tf.LookupException):
         rospy.loginfo("TF Exception")
         return
