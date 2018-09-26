@@ -137,6 +137,7 @@ def follow_m_line():
 
 rotate(90)
 move(2)
+follow_m_line()
 
 
 
