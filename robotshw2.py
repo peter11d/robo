@@ -125,6 +125,8 @@ def follow_m_line():
     # Get the starting position and rotation values     
     (position, rotation) = get_odom()
 
+    print("rotation: {}".format(rotation))
+    print(position)
     # Goal is (10, 0, 0)
     angle = radians(-rotation + atan((0 - position.y)/(10 - position.x)))
     print(angle)
