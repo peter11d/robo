@@ -105,7 +105,6 @@ class bug2():
         
         cmd = Twist()
         self.vel_pub.publish(cmd)
-        rospy.sleep(1)
     
     def rotate(self, angle):
         # Get the starting position values     
