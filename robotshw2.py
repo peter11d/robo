@@ -28,7 +28,7 @@ class bug2():
         self.linear_tolerance = rospy.get_param("~linear_speed", 0.05) 
         self.angular_speed = rospy.get_param("~angular_speed", 0.8)      # radians per second
         self.angular_tolerance = rospy.get_param("~angular_tolerance", radians(1)) # degrees to radians
-        self.unit_distance = 8 * self.linear_speed / self.rate
+        self.unit_distance = 1.5 * self.linear_tolerance
         self.unit_rotation = 15 * self.angular_speed
 
         state_change_time = rospy.Time.now()
@@ -163,13 +163,17 @@ class bug2():
         while self.range_center > 0.7 and not rospy.is_shutdown():
             (position, rotation) = self.get_odom()
 
-            # Goal is (10, 0, 0)
-            y = self.goal.y - position.y
-            x = self.goal.x - position.x
-            angle = -rotation + atan2(y, x)
 
-            if abs(angle) > abs(self.angular_tolerance): 
-                self.rotate(degrees(angle))
+            # Goal is (10, 0, 0)
+#            y = self.goal.y - position.y
+#            x = self.goal.x - position.x
+#            angle = -rotation + atan2(y, x)
+#
+#            if abs(angle) > abs(self.angular_tolerance): 
+#                self.rotate(degrees(angle))
+    
+            if abs(rotation) > abs(self.angular_tolerance):
+                self.rotate(degrees(-rotation))
     
             self.move()
         print("M-Line complete")
@@ -189,7 +193,7 @@ class bug2():
         else:
             side_dist = self.range_left
                
-        while side_dist > (object_distance + self.linear_tolerance) and not rospy.is_shutdown():
+        while side_dist > (sqrt(2) * object_distance + self.linear_tolerance) and not rospy.is_shutdown():
             print("ROTATING")
             self.rotate(direction * self.unit_rotation)
             rospy.sleep(0.1)
@@ -199,13 +203,15 @@ class bug2():
             else:
                 side_dist = self.range_left
             
+        self.move()
+        
         while not rospy.is_shutdown():
             print("_ _ _")
             (position, rotation) = self.get_odom()
             
             # Circumnavigate other way if at same point
-            if position.y - hit_point.y < self.linear_tolerance:
-                if position.x - hit_point.x < self.linear_tolerance:
+            distance = sqrt(pow((position.x - hit_point.x), 2) + pow((position.y - hit_point.y), 2))
+            if distance < self.linear_tolerance:
                     if direction != 1:
                         print("FAIL HERE")
                     self.circumnavigate(-1)
@@ -216,7 +222,6 @@ class bug2():
                 if position.x - self.linear_tolerance > hit_point.x:
                     break
                 
-            
             self.move()
             
             if (direction == 1):
