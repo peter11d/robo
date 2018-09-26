@@ -25,8 +25,11 @@ class bug2():
         self.goal.y = 0
 
         self.linear_speed = rospy.get_param("~linear_speed", 0.3)        # meters per second
+        self.linear_tolerance = rospy.get_param("~linear_speed", 0.05) 
         self.angular_speed = rospy.get_param("~angular_speed", 0.7)      # radians per second
-        self.angular_tolerance = rospy.get_param("~angular_tolerance", radians(1)) # degrees to radians
+        self.angular_tolerance = rospy.get_param("~angular_tolerance", radians(2)) # degrees to radians
+        self.unit_distance = 3 * self.linear_speed / self.rate
+        self.unit_rotation = 3 * self.angular_speed / self.rate
 
         state_change_time = rospy.Time.now()
 
@@ -49,8 +52,7 @@ class bug2():
                 rospy.loginfo("Cannot find transform between /odom and /base_link or /base_footprint")
                 rospy.signal_shutdown("tf Exception")
 
-        #self.rotate(-110)
-        #self.move(2.5)
+
         self.follow_m_line()
         rospy.sleep(2)
         
@@ -63,6 +65,7 @@ class bug2():
         self.range_left = msg.ranges[-1]
         self.range_center = msg.ranges[len(msg.ranges)//2]
         self.range_right = msg.ranges[0]
+        self.min_indx = msg.ranges.index(min(msg.ranges))
         print(self.range_center)
     
     def get_odom(self):
@@ -76,7 +79,10 @@ class bug2():
         return (Point(*trans), quat_to_angle(Quaternion(*rot)))
 
 
-    def move(self, dist):
+    def move(self, dist=None):
+        if dist is None:
+            dist = self.unit_distance
+        
         # Get the starting position values     
         (position, rotation) = self.get_odom()
                 
@@ -107,7 +113,10 @@ class bug2():
         self.vel_pub.publish(cmd)
         #rospy.sleep(1)
     
-    def rotate(self, angle):
+    def rotate(self, angle=None):
+        if angle is None:
+            angle = self.unit_rotation
+        
         # Get the starting position values     
         (position, rotation) = self.get_odom()
     
@@ -146,7 +155,7 @@ class bug2():
 
     def follow_m_line(self):
         # Get the starting position and rotation values
-        while self.range_center > 0.7 and not rospy.is_shutdown():
+        while self.range_center > 0.5 and not rospy.is_shutdown():
             (position, rotation) = self.get_odom()
 
             # Goal is (10, 0, 0)
@@ -157,10 +166,25 @@ class bug2():
             if abs(angle) > abs(self.angular_tolerance): 
                 self.rotate(degrees(angle))
     
-            self.move(self.linear_speed / self.rate)
+            self.move()
         
-        print("ENCOUNTERED")            
-                
+        
+    def circumnavigate(self):
+        rospy.sleep(0.5)
+        
+        (position, rotation) = self.get_odom()
+        self.hit_point = position
+        self.object_distance = self.range_center 
+        
+        while self.range_right > (self.object_distance + self.linear_tolerance) and not rospy.is_shutdown():
+            self.rotate()
+            
+        while True:
+            (position, rotation) = self.get_odom()
+            if position.y < self.linear_tolerance:
+                if position.x - self.linear_tolerance > self.hit_point:
+                    break
+            
     
 if __name__ == '__main__':
     bug2()
