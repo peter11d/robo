@@ -131,7 +131,7 @@ def follow_m_line():
     print("rotation: {}".format(rotation))
     print(position)
     # Goal is (10, 0, 0)
-    angle = radians(-rotation + atan2((goal.y - position.y)/(goal.x - position.x)))
+    angle = radians(-rotation + atan2(goal.y - position.y, goal.x - position.x))
     print(angle)
     rotate(angle)
     rospy.sleep(1)
