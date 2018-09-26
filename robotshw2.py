@@ -95,7 +95,7 @@ class bug2():
         while abs(distance_moved) < abs(dist) and not rospy.is_shutdown():
             # Publish the Twist message and sleep 1 cycle   
             self.vel_pub.publish(cmd)
-            self.r.sleep()
+            #self.r.sleep()
         
             # Get the current position
             (position, rotation) = self.get_odom()
@@ -105,6 +105,7 @@ class bug2():
         
         cmd = Twist()
         self.vel_pub.publish(cmd)
+        #rospy.sleep(1)
     
     def rotate(self, angle):
         # Get the starting position values     
@@ -140,6 +141,7 @@ class bug2():
        
         cmd = Twist()
         self.vel_pub.publish(cmd)
+        #rospy.sleep(1)
 
 
     def follow_m_line(self):
@@ -152,7 +154,8 @@ class bug2():
             x = self.goal.x - position.x
             angle = -rotation + atan2(y, x)
 
-            self.rotate(degrees(angle))
+            if abs(angle) > abs(self.angular_tolerance): 
+                self.rotate(degrees(angle))
     
             self.move(self.linear_speed / self.rate)
         
