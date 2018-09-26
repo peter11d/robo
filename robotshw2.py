@@ -27,9 +27,9 @@ class bug2():
         self.linear_speed = rospy.get_param("~linear_speed", 0.4)        # meters per second
         self.linear_tolerance = rospy.get_param("~linear_speed", 0.05) 
         self.angular_speed = rospy.get_param("~angular_speed", 0.8)      # radians per second
-        self.angular_tolerance = rospy.get_param("~angular_tolerance", radians(2)) # degrees to radians
+        self.angular_tolerance = rospy.get_param("~angular_tolerance", radians(1)) # degrees to radians
         self.unit_distance = 3 * self.linear_speed / self.rate
-        self.unit_rotation = 3 * self.angular_speed / self.rate
+        self.unit_rotation = 2 * self.angular_speed
 
         state_change_time = rospy.Time.now()
 
