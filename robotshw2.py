@@ -29,7 +29,7 @@ class bug2():
         self.angular_speed = rospy.get_param("~angular_speed", 0.8)      # radians per second
         self.angular_tolerance = rospy.get_param("~angular_tolerance", radians(2)) # degrees to radians
         self.unit_distance = 1.5 * self.linear_tolerance
-        self.unit_rotation = 6 * self.angular_speed
+        self.unit_rotation = 3 * self.angular_speed
 
         state_change_time = rospy.Time.now()
 
@@ -194,8 +194,9 @@ class bug2():
         else:
             side_dist = self.range_left
                
-        while side_dist < (sqrt(2) * object_distance + 2 * self.linear_tolerance) and not rospy.is_shutdown():
-            print("ROTATING")
+        target_side_dist = sqrt(2) * object_distance + 2 * self.linear_tolerance
+        # Get the robot facing parallel-ish to obstacle
+        while side_dist < target_side_dist and not rospy.is_shutdown():
             self.rotate(direction * self.unit_rotation)
             rospy.sleep(0.1)
             
@@ -203,7 +204,8 @@ class bug2():
                 side_dist = self.range_right
             else:
                 side_dist = self.range_left
-            
+          
+        # Move so not still at start point
         self.move()
         
         while not rospy.is_shutdown():
@@ -221,6 +223,7 @@ class bug2():
             # Break if on m-line (x-axis) and closer to goal
             if position.y < self.linear_tolerance:
                 if position.x - self.linear_tolerance > hit_point.x:
+                    print("BREAK")
                     break
                 
             self.move()
@@ -230,7 +233,7 @@ class bug2():
             else:
                 side_dist = self.range_left
             
-            if (side_dist > object_distance):
+            if (side_dist > target_side_dist):
                 self.rotate(-direction * self.unit_rotation)
     
 if __name__ == '__main__':
