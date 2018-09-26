@@ -117,7 +117,7 @@ class bug2():
         
         cmd = Twist()
         self.vel_pub.publish(cmd)
-        #rospy.sleep(1)
+        self.r.sleep(0.5)
     
     def rotate(self, angle=None):
         if angle is None:
@@ -157,7 +157,7 @@ class bug2():
        
         cmd = Twist()
         self.vel_pub.publish(cmd)
-        #rospy.sleep(1)
+        self.r.sleep(0.5)
 
 
     def follow_m_line(self):
