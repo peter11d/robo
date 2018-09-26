@@ -54,6 +54,7 @@ class bug2():
 
 
         self.follow_m_line()
+        self.circumnavigate(1)
         rospy.sleep(2)
         
     def shutdown(self):
