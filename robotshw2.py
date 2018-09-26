@@ -90,9 +90,6 @@ def move(dist):
     rospy.sleep(1)
     
 def rotate(angle):
-    print("ROTATE!!!!!")
-    print(abs(turn_angle + angular_tolerance))
-    print(radians(angle))
     # Get the starting position values     
     (position, rotation) = get_odom()
     
@@ -107,6 +104,10 @@ def rotate(angle):
     
     if angle < 0:
         cmd.angular.z *= -1
+    
+    print("ROTATE!!!!!")
+    print(abs(turn_angle + angular_tolerance))
+    print(radians(angle))
     
     while abs(turn_angle + angular_tolerance) < abs(radians(angle)) and not rospy.is_shutdown():
         # Publish the Twist message and sleep 1 cycle   
