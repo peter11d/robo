@@ -69,6 +69,9 @@ def move(dist):
     cmd = Twist()
     cmd.linear.x = linear_speed
     
+    if dist < 0:
+        cmd.linear.x *= -1
+    
     while distance_moved < dist and not rospy.is_shutdown():
         # Publish the Twist message and sleep 1 cycle   
         vel_pub.publish(cmd)
@@ -97,6 +100,9 @@ def rotate(angle):
     
     cmd = Twist()
     cmd.angular.z = angular_speed
+    
+    if angle < 0:
+        cmd.angular.z *= -1
     
     while abs(turn_angle + angular_tolerance) < abs(radians(angle)) and not rospy.is_shutdown():
         # Publish the Twist message and sleep 1 cycle   
