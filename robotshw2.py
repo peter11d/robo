@@ -24,9 +24,9 @@ class bug2():
         self.goal.x = 10
         self.goal.y = 0
 
-        self.linear_speed = rospy.get_param("~linear_speed", 0.3)        # meters per second
+        self.linear_speed = rospy.get_param("~linear_speed", 0.4)        # meters per second
         self.linear_tolerance = rospy.get_param("~linear_speed", 0.05) 
-        self.angular_speed = rospy.get_param("~angular_speed", 0.7)      # radians per second
+        self.angular_speed = rospy.get_param("~angular_speed", 0.8)      # radians per second
         self.angular_tolerance = rospy.get_param("~angular_tolerance", radians(2)) # degrees to radians
         self.unit_distance = 3 * self.linear_speed / self.rate
         self.unit_rotation = 3 * self.angular_speed / self.rate
@@ -62,10 +62,15 @@ class bug2():
         rospy.sleep(1)
     
     def scan_callback(self, msg):
+        self.msg_len = len(msg.ranges)
+        
         self.range_left = msg.ranges[-1]
-        self.range_center = msg.ranges[len(msg.ranges)//2]
+        self.range_center = msg.ranges[self.msg_len // 2]
         self.range_right = msg.ranges[0]
-        self.min_indx = msg.ranges.index(min(msg.ranges))
+        
+        self.min_dist = min(msg.ranges)
+        self.min_indx = msg.ranges.index(self.min_dist)
+        
         print(self.range_center)
     
     def get_odom(self):
@@ -155,7 +160,7 @@ class bug2():
 
     def follow_m_line(self):
         # Get the starting position and rotation values
-        while self.range_center > 0.5 and not rospy.is_shutdown():
+        while self.range_center > 0.7 and not rospy.is_shutdown():
             (position, rotation) = self.get_odom()
 
             # Goal is (10, 0, 0)
@@ -167,24 +172,52 @@ class bug2():
                 self.rotate(degrees(angle))
     
             self.move()
+            print("M-Line complete")
         
         
-    def circumnavigate(self):
+    def circumnavigate(self, direction=1):
+        
+        print("Starting circumnavigate!")
         rospy.sleep(0.5)
         
         (position, rotation) = self.get_odom()
-        self.hit_point = position
-        self.object_distance = self.range_center 
+        hit_point = position
+        object_distance = self.min_dist
         
-        while self.range_right > (self.object_distance + self.linear_tolerance) and not rospy.is_shutdown():
-            self.rotate()
+        if (direction == 1):
+            side_dist = self.range_right
+        else:
+            side_dist = self.range_left
+               
+        while side_dist > (object_distance + self.linear_tolerance) and not rospy.is_shutdown():
+            self.rotate(direction * self.unit_rotation)
             
-        while True:
+        while not rospy.is_shutdown():
             (position, rotation) = self.get_odom()
-            if position.y < self.linear_tolerance:
-                if position.x - self.linear_tolerance > self.hit_point:
-                    break
             
+            # Circumnavigate other way if at same point
+            if position.y - hit_point.y < self.linear_tolerance:
+                if position.x - hit_point.x < self.linear_tolerance:
+                    if direction != 1:
+                        print("FAIL HERE")
+                    self.circumnavigate(-1)
+                    break
+                    
+            # Break if on m-line (x-axis) and closer to goal
+            if position.y < self.linear_tolerance:
+                if position.x - self.linear_tolerance > hit_point.x:
+                    break
+                
+            
+            self.move()
+            
+            if (direction == 1):
+                side_dist = self.range_right
+            else:
+                side_dist = self.range_left
+            
+            if (side_dist > object_distance):
+                self.rotate(-direction * self.unit_rotation)
     
 if __name__ == '__main__':
     bug2()
