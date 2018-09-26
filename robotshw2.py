@@ -3,7 +3,7 @@ import rospy
 import tf
 from geometry_msgs.msg import Twist, Point, Quaternion
 from sensor_msgs.msg import LaserScan
-from math import radians, copysign, sqrt, pow, pi, atan
+from math import radians, copysign, sqrt, pow, pi, atan2
 from rbx1_nav.transform_utils import quat_to_angle, normalize_angle
 
 vel_pub = rospy.Publisher('cmd_vel_mux/input/navi', Twist, queue_size=1)
@@ -47,6 +47,9 @@ except (tf.Exception, tf.ConnectivityException, tf.LookupException):
         rospy.signal_shutdown("tf Exception")  
 
 position = Point()
+goal = Point()
+goal.x = 10
+goal.y = 0
 
 r = rospy.Rate(20)
 linear_speed = rospy.get_param("~linear_speed", 0.2)        # meters per second
@@ -128,7 +131,7 @@ def follow_m_line():
     print("rotation: {}".format(rotation))
     print(position)
     # Goal is (10, 0, 0)
-    angle = radians(-rotation + atan((0 - position.y)/(10 - position.x)))
+    angle = radians(-rotation + atan2((goal.y - position.y)/(goal.x - position.x)))
     print(angle)
     rotate(angle)
     rospy.sleep(1)
@@ -137,7 +140,7 @@ def follow_m_line():
     
 
 follow_m_line()
-
+rospy.sleep(2)
 
 
 
