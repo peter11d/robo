@@ -4,7 +4,7 @@ import tf
 from geometry_msgs.msg import Twist, Point, Quaternion
 from sensor_msgs.msg import LaserScan
 from math import radians, copysign, sqrt, pow, pi
-from rbx1_nav.transform_utils import quat_to_angle
+from rbx1_nav.transform_utils import quat_to_angle, normalize_angle
 
 vel_pub = rospy.Publisher('cmd_vel_mux/input/navi', Twist, queue_size=1)
 
@@ -50,11 +50,13 @@ except (tf.Exception, tf.ConnectivityException, tf.LookupException):
 position = Point()
 
 r = rospy.Rate(20)
-linear_speed = 0.2
+linear_speed = rospy.get_param("~linear_speed", 0.2)        # meters per second
+angular_speed = rospy.get_param("~angular_speed", 0.7)      # radians per second
+angular_tolerance = rospy.get_param("~angular_tolerance", radians(2)) # degrees to radians
 
 
 
-def move_x(move_distance):
+def move(dist):
      # Get the starting position values     
     (position, rotation) = get_odom()
                 
@@ -62,12 +64,12 @@ def move_x(move_distance):
     y_start = position.y
     
     # Keep track of the distance traveled
-    distance = 0
+    distance_moved = 0
     
     cmd = Twist()
     cmd.linear.x = linear_speed
     
-    while distance < move_distance and not rospy.is_shutdown():
+    while distance_moved < dist and not rospy.is_shutdown():
         # Publish the Twist message and sleep 1 cycle   
         vel_pub.publish(cmd)
         r.sleep()
@@ -76,23 +78,47 @@ def move_x(move_distance):
         (position, rotation) = get_odom()
         
         # Compute the Euclidean distance from the start
-        distance = sqrt(pow((position.x - x_start), 2) + pow((position.y - y_start), 2))
-        print(distance)
+        distance_moved = sqrt(pow((position.x - x_start), 2) + pow((position.y - y_start), 2))
+        print(distance_moved)
         
     cmd = Twist()
     vel_pub.publish(cmd)
     rospy.sleep(1)
     
-def move_y(dist):
-    pass
-
-def move_z(dist):
-    pass
+def rotate(angle):
+    # Get the starting position values     
+    (position, rotation) = get_odom()
     
+    # Track the last angle measured
+    last_angle = rotation
+    
+    # Track how far we have turned
+    turn_angle = 0
+    
+    cmd = Twist()
+    cmd.angular.z = angular_speed
+    
+    while abs(turn_angle + angular_tolerance) < abs(angle) and not rospy.is_shutdown():
+        # Publish the Twist message and sleep 1 cycle   
+        vel_pub.publish(cmd)
+        r.sleep()
+        
+        # Get the current rotation
+        (position, rotation) = get_odom()
+        
+        # Compute the amount of rotation since the last lopp
+        delta_angle = normalize_angle(rotation - last_angle)
+        
+        turn_angle += delta_angle
+        last_angle = rotation
+        
+    cmd = Twist()
+    vel_pub.publish(cmd)
+    rospy.sleep(1)
 
-move_x(1)
-move_x(1)
-move_x(1)
+move(1)
+rotate(90)
+move(1)
 
 
 #    (position, rotation) = self.get_odom()
