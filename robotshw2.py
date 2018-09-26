@@ -82,8 +82,6 @@ def move(dist):
         # Compute the Euclidean distance from the start
         distance_moved = sqrt(pow((position.x - x_start), 2) + pow((position.y - y_start), 2))
         
-    print (position)
-    print (radians(rotation))
     cmd = Twist()
     vel_pub.publish(cmd)
     rospy.sleep(1)
@@ -129,14 +127,13 @@ def follow_m_line():
 
     # Goal is (10, 0, 0)
     angle = radians(-rotation + atan((0 - position.y)/(10 - position.x)))
+    print(angle)
     rotate(angle)
-    
+    rospy.sleep(1)
     move(1)
     
     
 
-rotate(90)
-move(2)
 follow_m_line()
 
 
