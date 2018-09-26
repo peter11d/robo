@@ -123,7 +123,7 @@ class bug2():
         if angle is None:
             angle = self.unit_rotation
         
-        print(angle)
+        print("Angle: {}".format(angle))
         # Get the starting position values     
         (position, rotation) = self.get_odom()
     
@@ -139,12 +139,12 @@ class bug2():
         if angle < 0:
             cmd.angular.z *= -1
     
-    
+        print("Left: {} \t Right: {}".format(abs(turn_angle + self.angular_tolerance), abs(radians(angle)))
         while abs(turn_angle + self.angular_tolerance) < abs(radians(angle)) and not rospy.is_shutdown():
             # Publish the Twist message and sleep 1 cycle   
             #print("WHILE")
             self.vel_pub.publish(cmd)
-            self.r.sleep()
+            #self.r.sleep()
         
             # Get the current rotation
             (position, rotation) = self.get_odom()
