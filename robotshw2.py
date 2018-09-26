@@ -90,6 +90,7 @@ def move(dist):
     rospy.sleep(1)
     
 def rotate(angle):
+    print("ROTATE!!!!!")
     # Get the starting position values     
     (position, rotation) = get_odom()
     
