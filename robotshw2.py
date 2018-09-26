@@ -193,6 +193,7 @@ class bug2():
         while side_dist > (object_distance + self.linear_tolerance) and not rospy.is_shutdown():
             print("ROTATING")
             self.rotate(direction * self.unit_rotation)
+            rospy.sleep(0.1)
             
         while not rospy.is_shutdown():
             print("_ _ _")
