@@ -136,6 +136,8 @@ def follow_m_line():
     print("x: {} \t y: {}".format(x, y))
     print("atan: {}".format(atan2(goal.y - position.y, goal.x - position.x)))
     #rotate(angle)
+    angle = -rotation + atan2(y, x)
+    print(angle)
     rospy.sleep(1)
     move(1)
     
