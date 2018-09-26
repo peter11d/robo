@@ -15,7 +15,7 @@ def shutdown():
 def scan_callback(msg):
     global g_range_ahead
     g_range_ahead = min(msg.ranges)
-    print(g_range_ahead)
+    # print(g_range_ahead)
     
 def get_odom():
     # Get the current transform between the odom and base frames
@@ -52,7 +52,7 @@ position = Point()
 r = rospy.Rate(20)
 linear_speed = rospy.get_param("~linear_speed", 0.2)        # meters per second
 angular_speed = rospy.get_param("~angular_speed", 0.7)      # radians per second
-angular_tolerance = rospy.get_param("~angular_tolerance", radians(2)) # degrees to radians
+angular_tolerance = rospy.get_param("~angular_tolerance", radians(1)) # degrees to radians
 
 
 
@@ -82,7 +82,6 @@ def move(dist):
         
         # Compute the Euclidean distance from the start
         distance_moved = sqrt(pow((position.x - x_start), 2) + pow((position.y - y_start), 2))
-        print(distance_moved)
         
     cmd = Twist()
     vel_pub.publish(cmd)
@@ -117,7 +116,8 @@ def rotate(angle):
         
         turn_angle += delta_angle
         last_angle = rotation
-        
+       
+    print (position)
     cmd = Twist()
     vel_pub.publish(cmd)
     rospy.sleep(1)
@@ -126,28 +126,7 @@ move(0.5)
 rotate(90)
 move(0.5)
 rotate(-90)
-move(0.5)
 move(-1.0)
 
-
-#    (position, rotation) = self.get_odom()
-#    x_start = position.x
-#    y_start = position.y
-#    
-#    distance = 0
-
-#while not rospy.is_shutdown():
-#    if driving_forward:
-#        if (g_range_ahead < 0.8 or rospy.Time.now() > state_change_time):
-#            driving_forward = False
-#            state_change_time = rospy.Time.now() + rospy.Duration(5)
-#    else: # we're not driving_forward
-#        if rospy.Time.now() > state_change_time:
-#            driving_forward = True 
-#            # we're done spinning, time to go forward!
-#            state_change_time = rospy.Time.now() + rospy.Duration(30)
-#    twist = Twist()
-#    move_x(2, twist)
-#    cmd_vel_pub.publish(twist)
 
 shutdown()
