@@ -13,8 +13,9 @@ def shutdown():
     rospy.sleep(1)
     
 def scan_callback(msg):
+    print(len(msg.ranges))
     g_range_ahead = min(msg.ranges)
-    return(g_range_ahead)
+    #print(g_range_ahead)
     
 def get_odom():
     # Get the current transform between the odom and base frames
@@ -51,7 +52,8 @@ goal = Point()
 goal.x = 10
 goal.y = 0
 
-r = rospy.Rate(20)
+rate = 20
+r = rospy.Rate(rate)
 linear_speed = rospy.get_param("~linear_speed", 0.2)        # meters per second
 angular_speed = rospy.get_param("~angular_speed", 0.7)      # radians per second
 angular_tolerance = rospy.get_param("~angular_tolerance", radians(1)) # degrees to radians
@@ -133,17 +135,15 @@ def follow_m_line():
     # Get the starting position and rotation values     
     (position, rotation) = get_odom()
 
-    print("rotation: {}".format(rotation))
-    print(position)
     # Goal is (10, 0, 0)
     y = goal.y - position.y
     x = goal.x - position.x
-    print("x: {} \t y: {}".format(x, y))
-    print("atan: {}".format(atan2(goal.y - position.y, goal.x - position.x)))
-    #rotate(angle)
     angle = -rotation + atan2(y, x)
-    print(angle)
+
     rotate(degrees(angle))
+    
+    while True and not rospy.is_shutdown():
+        move(linear_speed / rate)
     move(1)
     
     
