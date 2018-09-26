@@ -123,6 +123,7 @@ class bug2():
         if angle is None:
             angle = self.unit_rotation
         
+        print(angle)
         # Get the starting position values     
         (position, rotation) = self.get_odom()
     
@@ -193,6 +194,7 @@ class bug2():
         while side_dist > (object_distance + self.linear_tolerance) and not rospy.is_shutdown():
             print("ROTATING")
             self.rotate(direction * self.unit_rotation)
+            print(direction * self.unit_rotation)
             rospy.sleep(0.1)
             
         while not rospy.is_shutdown():
