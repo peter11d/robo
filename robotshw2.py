@@ -13,9 +13,8 @@ def shutdown():
     rospy.sleep(1)
     
 def scan_callback(msg):
-    global g_range_ahead
     g_range_ahead = min(msg.ranges)
-    # print(g_range_ahead)
+    return(g_range_ahead)
     
 def get_odom():
     # Get the current transform between the odom and base frames
@@ -84,7 +83,7 @@ def move(dist):
         distance_moved = sqrt(pow((position.x - x_start), 2) + pow((position.y - y_start), 2))
         
     print (position)
-    print (rotation)
+    print (radians(rotation))
     cmd = Twist()
     vel_pub.publish(cmd)
     rospy.sleep(1)
@@ -124,9 +123,21 @@ def rotate(angle):
     rospy.sleep(1)
 
 
-move(0.2)
-rotate(45)
-move(0.2)
+def follow_m_line():
+    # Get the starting position and rotation values     
+    (position, rotation) = get_odom()
+
+    # Goal is (10, 0, 0)
+    angle = radians(-rotation + math.atan((0 - position.y)/(10 - position.x)))
+    rotate(angle)
+    
+    move(1)
+    
+    
+
+rotate(90)
+move(2)
+
 
 
 
