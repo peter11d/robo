@@ -98,7 +98,7 @@ def rotate(angle):
     cmd = Twist()
     cmd.angular.z = angular_speed
     
-    while abs(turn_angle + angular_tolerance) < abs(angle) and not rospy.is_shutdown():
+    while abs(turn_angle + angular_tolerance) < abs(radians(angle)) and not rospy.is_shutdown():
         # Publish the Twist message and sleep 1 cycle   
         vel_pub.publish(cmd)
         r.sleep()
