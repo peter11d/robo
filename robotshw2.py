@@ -143,11 +143,11 @@ def follow_m_line():
     angle = -rotation + atan2(y, x)
     print(angle)
     rotate(angle)
-    rospy.sleep(5)
     move(1)
     
     
-
+rotate(90)
+move(2.5)
 follow_m_line()
 rospy.sleep(2)
 
