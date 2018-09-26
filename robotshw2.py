@@ -72,7 +72,7 @@ def move(dist):
     if dist < 0:
         cmd.linear.x *= -1
     
-    while distance_moved < dist and not rospy.is_shutdown():
+    while abs(distance_moved) < abs(dist) and not rospy.is_shutdown():
         # Publish the Twist message and sleep 1 cycle   
         vel_pub.publish(cmd)
         r.sleep()
@@ -83,6 +83,8 @@ def move(dist):
         # Compute the Euclidean distance from the start
         distance_moved = sqrt(pow((position.x - x_start), 2) + pow((position.y - y_start), 2))
         
+    print (position)
+    print (rotation)
     cmd = Twist()
     vel_pub.publish(cmd)
     rospy.sleep(1)
@@ -117,16 +119,15 @@ def rotate(angle):
         turn_angle += delta_angle
         last_angle = rotation
        
-    print (position)
     cmd = Twist()
     vel_pub.publish(cmd)
     rospy.sleep(1)
 
-move(0.5)
-rotate(90)
-move(0.5)
-rotate(-90)
-move(-1.0)
+
+move(0.2)
+rotate(45)
+move(0.2)
+
 
 
 shutdown()
