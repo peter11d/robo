@@ -71,6 +71,7 @@ class bug2():
         
         self.min_dist = min(msg.ranges)
         self.min_indx = msg.ranges.index(self.min_dist)
+        print(self.range_center)
         
         if (self.range_center < 1.0):
             print(self.range_center)
@@ -162,29 +163,22 @@ class bug2():
     def follow_m_line(self):
         # Get the starting position and rotation values
         while self.range_center > 0.65 and not rospy.is_shutdown():
+            print("following m_line")
             (position, rotation) = self.get_odom()
 
-
-            # Goal is (10, 0, 0)
-#            y = self.goal.y - position.y
-#            x = self.goal.x - position.x
-#            angle = -rotation + atan2(y, x)
-#
-#            if abs(angle) > abs(self.angular_tolerance): 
-#                self.rotate(degrees(angle))
             if abs(rotation) > abs(self.angular_tolerance):
                 self.rotate(degrees(-0.5 * rotation))
     
             self.move()
-        print("M-Line complete")
+        print("Object encountered")
         
         
     def side_dist_helper(self, direction):
-        if (direction == 1):
-            return self.range_right
-        else:
-            return self.range_left
-        
+        return (self.range_right if direction == 1 else self.range_left)
+
+    def on_mline(self):
+        (position, rotation) = self.get_odom()
+        return (abs(position.y) < self.linear_tolerance)
     
     def circumnavigate(self, direction=1):
         
@@ -198,56 +192,57 @@ class bug2():
         side_dist = self.side_dist_helper(direction)
                
         target_side_dist = sqrt(2) * object_distance + 2 * self.linear_tolerance
-        # Get the robot facing parallel-ish to obstacle
-        while side_dist < target_side_dist and not rospy.is_shutdown():
-            self.rotate(direction * self.unit_rotation)
-            rospy.sleep(0.1)
-            
-            side_dist = self.side_dist_helper(direction)
-          
-        # Move so not still at start point
-        self.move()
-        
-        while not rospy.is_shutdown():
-            print("_ _ _")
+
+        while not (self.on_mline() and position.x - self.linear_tolerance > hit_point.x) or not rospy.is_shutdown():
+            print("circumnavigating like a boss")
             (position, rotation) = self.get_odom()
+
+            side_dist = self.side_dist_helper(direction)
+
+            while self.range_center < .7 or side_dist < target_side_dist:
+                print("rotating to avoid object")
+                self.rotate(direction * self.unit_rotation)
+                rospy.sleep(0.1)
+                side_dist = self.side_dist_helper(direction)
+
+            while side_dist > (target_side_dist + 3 * self.linear_tolerance):
+                print("rotating towards object")
+                self.rotate(-direction * self.unit_rotation)
+                rospy.sleep(0.1)
+                side_dist = self.side_dist_helper(direction)
             
             # Circumnavigate other way if at same point
-            distance = sqrt(pow((position.x - hit_point.x), 2) + pow((position.y - hit_point.y), 2))
+            '''distance = sqrt(pow((position.x - hit_point.x), 2) + pow((position.y - hit_point.y), 2))
             if distance < self.linear_tolerance:
                     if direction != 1:
                         print("FAIL HERE")
                     self.circumnavigate(-1)
-                    break
+                    break'''
                     
-            # Break if on m-line (x-axis) and closer to goal
-            if position.y < self.linear_tolerance:
-                if position.x - self.linear_tolerance > hit_point.x:
-                    print("BREAK")
-                    break
                 
             self.move()
             
-            side_dist = self.side_dist_helper(direction)
+            
             
             # If end of barrier reached, move forward passed it, and then turn to find it
-            if isnan(side_dist):
+            """if isnan(side_dist):
                 self.move(target_side_dist)
                 self.rotate(-direction * 90)
                 
                 self.move()
-                continue
+                continue"""
 #                while isnan(side_dist):
 #                    self.rotate(-direction * self.unit_rotation)
 #                
 #                    side_dist = self.side_dist_helper(direction)
                 
             #if facing away from barrier  
-            if side_dist > target_side_dist:
+            '''if side_dist > target_side_dist:
                 self.rotate(-direction * self.unit_rotation)
             #if facing toward barrier
             if side_dist < (target_side_dist - 4 * self.linear_tolerance):
-                self.rotate(direction * self.unit_rotation)
+                self.rotate(direction * self.unit_rotation)'''
+        print("Circumnativation complete!")
                 
     
 if __name__ == '__main__':
