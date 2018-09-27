@@ -29,7 +29,7 @@ class bug2():
         self.angular_speed = rospy.get_param("~angular_speed", 0.8)      # radians per second
         self.angular_tolerance = rospy.get_param("~angular_tolerance", radians(2)) # degrees to radians
         self.unit_distance = 3 * self.linear_tolerance
-        self.unit_rotation = 4 * self.angular_speed
+        self.unit_rotation = 5 * self.angular_speed
 
         state_change_time = rospy.Time.now()
 
@@ -230,10 +230,9 @@ class bug2():
             
             side_dist = self.side_dist_helper(direction)
             
-            
             # If end of barrier reached, move forward passed it, and then turn to find it
             if isnan(side_dist):
-                move(1.25 * targer_side_dist)
+                self.move(1.25 * targer_side_dist)
                 
                 while isnan(side_dist):
                     self.rotate(-direction * self.unit_rotation)
@@ -241,10 +240,10 @@ class bug2():
                     side_dist = self.side_dist_helper(direction)
                 
             #if facing away from barrier  
-            if (side_dist > target_side_dist):
+            if side_dist > target_side_dist:
                 self.rotate(-direction * self.unit_rotation)
             #if facing toward barrier
-            else:
+            if side_dist < (target_side_dist - 4 * self.linear_tolerance):
                 self.rotate(direction * self.unit_rotation)
                 
     
