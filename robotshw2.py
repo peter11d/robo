@@ -3,7 +3,7 @@ import rospy
 import tf
 from geometry_msgs.msg import Twist, Point, Quaternion
 from sensor_msgs.msg import LaserScan
-from math import radians, degrees, copysign, sqrt, pow, pi, atan2
+from math import radians, degrees, copysign, sqrt, pow, pi, atan2, isnan
 from rbx1_nav.transform_utils import quat_to_angle, normalize_angle
 
 class bug2():
@@ -28,7 +28,7 @@ class bug2():
         self.linear_tolerance = rospy.get_param("~linear_speed", 0.05) 
         self.angular_speed = rospy.get_param("~angular_speed", 0.8)      # radians per second
         self.angular_tolerance = rospy.get_param("~angular_tolerance", radians(2)) # degrees to radians
-        self.unit_distance = 1.5 * self.linear_tolerance
+        self.unit_distance = 3 * self.linear_tolerance
         self.unit_rotation = 4 * self.angular_speed
 
         state_change_time = rospy.Time.now()
@@ -161,9 +161,7 @@ class bug2():
 
     def follow_m_line(self):
         # Get the starting position and rotation values
-        print("M-Line starting")
-        print("Max Angle Deviation: {}".format(self.angular_tolerance))
-        while self.range_center > 0.75 and not rospy.is_shutdown():
+        while self.range_center > 0.7 and not rospy.is_shutdown():
             (position, rotation) = self.get_odom()
 
 
@@ -174,9 +172,8 @@ class bug2():
 #
 #            if abs(angle) > abs(self.angular_tolerance): 
 #                self.rotate(degrees(angle))
-            print (rotation)
             if abs(rotation) > abs(self.angular_tolerance):
-                self.rotate(degrees(-0.7 * rotation))
+                self.rotate(degrees(-0.5 * rotation))
     
             self.move()
         print("M-Line complete")
@@ -235,6 +232,9 @@ class bug2():
             else:
                 side_dist = self.range_left
             
+            while isnan(side_dist):
+                self.rotate(-direction * self.unit_rotation)
+                
             if (side_dist > target_side_dist):
                 self.rotate(-direction * self.unit_rotation)
             else:
