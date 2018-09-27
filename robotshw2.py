@@ -179,6 +179,13 @@ class bug2():
         print("M-Line complete")
         
         
+    def side_dist_helper(self, direction):
+        if (direction == 1):
+            return self.range_right
+        else:
+            return self.range_left
+        
+    
     def circumnavigate(self, direction=1):
         
         print("Starting circumnavigate!")
@@ -188,10 +195,7 @@ class bug2():
         hit_point = position
         object_distance = self.min_dist
         
-        if (direction == 1):
-            side_dist = self.range_right
-        else:
-            side_dist = self.range_left
+        side_dist = self.side_dist_helper(direction)
                
         target_side_dist = sqrt(2) * object_distance + 2 * self.linear_tolerance
         # Get the robot facing parallel-ish to obstacle
@@ -199,10 +203,7 @@ class bug2():
             self.rotate(direction * self.unit_rotation)
             rospy.sleep(0.1)
             
-            if (direction == 1):
-                side_dist = self.range_right
-            else:
-                side_dist = self.range_left
+            side_dist = self.side_dist_helper(direction)
           
         # Move so not still at start point
         self.move()
@@ -227,13 +228,13 @@ class bug2():
                 
             self.move()
             
-            if (direction == 1):
-                side_dist = self.range_right
-            else:
-                side_dist = self.range_left
+            side_dist = self.side_dist_helper(direction)
             
             while isnan(side_dist):
+                print("NaN)
                 self.rotate(-direction * self.unit_rotation)
+                
+                side_dist = self.side_dist_helper(direction)
                 
             if (side_dist > target_side_dist):
                 self.rotate(-direction * self.unit_rotation)
