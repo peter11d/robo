@@ -162,6 +162,7 @@ class bug2():
     def follow_m_line(self):
         # Get the starting position and rotation values
         print("M-Line starting")
+        print("Max Angle Deviation: {}".format(self.angular_tolerance))
         while self.range_center > 0.75 and not rospy.is_shutdown():
             (position, rotation) = self.get_odom()
 
@@ -173,8 +174,9 @@ class bug2():
 #
 #            if abs(angle) > abs(self.angular_tolerance): 
 #                self.rotate(degrees(angle))
+            print (rotation)
             if abs(rotation) > abs(self.angular_tolerance):
-                self.rotate(degrees(4/5 * -rotation))
+                self.rotate(degrees(-0.7 * rotation))
     
             self.move()
         print("M-Line complete")
