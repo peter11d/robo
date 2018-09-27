@@ -232,7 +232,7 @@ class bug2():
             
             # If end of barrier reached, move forward passed it, and then turn to find it
             if isnan(side_dist):
-                self.move(1.25 * targer_side_dist)
+                self.move(1.25 * target_side_dist)
                 
                 while isnan(side_dist):
                     self.rotate(-direction * self.unit_rotation)
