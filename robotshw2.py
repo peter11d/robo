@@ -231,7 +231,7 @@ class bug2():
             side_dist = self.side_dist_helper(direction)
             
             while isnan(side_dist):
-                print("NaN)
+                print("NaN")
                 self.rotate(-direction * self.unit_rotation)
                 
                 side_dist = self.side_dist_helper(direction)
