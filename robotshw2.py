@@ -29,7 +29,7 @@ class bug2():
         self.angular_speed = rospy.get_param("~angular_speed", 0.8)      # radians per second
         self.angular_tolerance = rospy.get_param("~angular_tolerance", radians(2)) # degrees to radians
         self.unit_distance = 1.5 * self.linear_tolerance
-        self.unit_rotation = 3 * self.angular_speed
+        self.unit_rotation = 4 * self.angular_speed
 
         state_change_time = rospy.Time.now()
 
@@ -162,7 +162,7 @@ class bug2():
     def follow_m_line(self):
         # Get the starting position and rotation values
         print("M-Line starting")
-        while self.range_center > 0.7 and not rospy.is_shutdown():
+        while self.range_center > 0.75 and not rospy.is_shutdown():
             (position, rotation) = self.get_odom()
 
 
@@ -174,7 +174,7 @@ class bug2():
 #            if abs(angle) > abs(self.angular_tolerance): 
 #                self.rotate(degrees(angle))
             if abs(rotation) > abs(self.angular_tolerance):
-                self.rotate(degrees(-rotation))
+                self.rotate(degrees(4/5 * -rotation))
     
             self.move()
         print("M-Line complete")
@@ -235,6 +235,9 @@ class bug2():
             
             if (side_dist > target_side_dist):
                 self.rotate(-direction * self.unit_rotation)
+            else:
+                self.rotate(direction * self.unit_rotation)
+                
     
 if __name__ == '__main__':
     bug2()
