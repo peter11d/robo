@@ -230,14 +230,20 @@ class bug2():
             
             side_dist = self.side_dist_helper(direction)
             
-            while isnan(side_dist):
-                print("NaN")
-                self.rotate(-direction * self.unit_rotation)
+            
+            # If end of barrier reached, move forward passed it, and then turn to find it
+            if isnan(side_dist):
+                move(1.25 * targer_side_dist)
                 
-                side_dist = self.side_dist_helper(direction)
+                while isnan(side_dist):
+                    self.rotate(-direction * self.unit_rotation)
                 
+                    side_dist = self.side_dist_helper(direction)
+                
+            #if facing away from barrier  
             if (side_dist > target_side_dist):
                 self.rotate(-direction * self.unit_rotation)
+            #if facing toward barrier
             else:
                 self.rotate(direction * self.unit_rotation)
                 
