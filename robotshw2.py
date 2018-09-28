@@ -160,7 +160,7 @@ class bug2():
             
             if isnan(side_dist):
                 print("cant see object")
-                self.move(target_side_dist * .7)
+                self.move(target_side_dist * .75)
                 while isnan(side_dist):
                     self.rotate(-direction * self.unit_rotation)
                     rospy.sleep(0.1)
@@ -173,13 +173,15 @@ class bug2():
                     self.rotate(direction * self.unit_rotation)
                     rospy.sleep(0.1)
                     side_dist = self.side_dist_helper(direction)
+                    
     
                 while side_dist > (target_side_dist + 3 * self.linear_tolerance):
                     print("rotating towards object")
                     self.rotate(-direction * self.unit_rotation)
                     rospy.sleep(0.1)
                     side_dist = self.side_dist_helper(direction)
-                    
+            
+                
             self.move()
 
             
