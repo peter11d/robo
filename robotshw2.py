@@ -101,7 +101,7 @@ class bug2():
         (position, rotation) = self.get_odom()
         print(position)
         print(rotation)
-        while self.range_center > 0.65 and not rospy.is_shutdown():
+        while self.range_center > 0.7 and not rospy.is_shutdown():
             (position, rotation) = self.get_odom()
 
             y = -position.y
@@ -144,7 +144,7 @@ class bug2():
         
         side_dist = self.side_dist_helper(direction)
                
-        target_side_dist = .8 #sqrt(2) * object_distance + 2 * self.linear_tolerance
+        target_side_dist = .9 #sqrt(2) * object_distance + 2 * self.linear_tolerance
 
         while not (self.on_mline() and position.x - self.linear_tolerance > hit_point.x) and not rospy.is_shutdown():
             print("circumnavigating like a boss")
