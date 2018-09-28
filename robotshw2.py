@@ -44,8 +44,12 @@ class bug2():
                 rospy.signal_shutdown("tf Exception")
 
         self.follow_m_line()
-        self.circumnavigate(1)
-        rospy.sleep(2)
+        while not at_goal():
+            self.circumnavigate(1)
+            self.follow_m_line()
+            rospy.sleep(1)
+            
+        print("GOAL REACHED")
 
 
     def move(self, dist=None):
@@ -114,6 +118,7 @@ class bug2():
 
             if self.at_goal():
                 print("AT GOAL MOFOS!!!")
+                return
             #if abs(rotation) > abs(self.angular_tolerance):
             #    self.rotate(degrees(-0.25 * rotation))
     
