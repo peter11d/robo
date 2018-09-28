@@ -167,18 +167,17 @@ class bug2():
                     
                 
             else:
+                while side_dist > (target_side_dist + 2 * self.linear_tolerance):
+                    print("rotating towards object")
+                    self.rotate(-direction * self.unit_rotation)
+                    side_dist = self.side_dist_helper(direction)
+                
                 while self.range_center < .75 or side_dist < target_side_dist:
                     print("rotating to avoid object")
                     self.rotate(direction * self.unit_rotation)
                     side_dist = self.side_dist_helper(direction)
                     
-    
-                while side_dist > (target_side_dist + 2 * self.linear_tolerance):
-                    print("rotating towards object")
-                    self.rotate(-direction * self.unit_rotation)
-                    side_dist = self.side_dist_helper(direction)
             
-            rospy.sleep(0.3) 
             self.move()
 
             
