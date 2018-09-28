@@ -185,6 +185,7 @@ class bug2():
                     break'''
             
         print("Circumnativation complete!")
+        print(position)
 
     def shutdown(self):
         rospy.loginfo("Stopping the robot...")
