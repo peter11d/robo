@@ -22,7 +22,7 @@ class bug2():
         self.angular_speed = rospy.get_param("~angular_speed", 0.45)      # radians per second
         self.angular_tolerance = rospy.get_param("~angular_tolerance", radians(2)) # degrees to radians
         self.unit_distance = 2 * self.linear_tolerance
-        self.unit_rotation = 15 * self.angular_speed
+        self.unit_rotation = 7 * self.angular_speed
 
         self.tf_listener = tf.TransformListener()
         rospy.sleep(2)
