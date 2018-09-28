@@ -105,7 +105,7 @@ class bug2():
         (position, rotation) = self.get_odom()
         print(position)
         print(rotation)
-        while self.range_center > 0.75 and not rospy.is_shutdown():
+        while (isnan(self.range_center) or self.range_center > 0.75) and not rospy.is_shutdown():
             (position, rotation) = self.get_odom()
 
             y = -position.y
