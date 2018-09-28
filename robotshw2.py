@@ -107,7 +107,7 @@ class bug2():
             y = -position.y
             x = 10 - position.x
             angle = -rotation + atan2(y, x)
-            if abs(angle) > abs(4 * self.angular_tolerance):
+            if abs(angle) > abs(3 * self.angular_tolerance):
                 self.rotate(degrees(angle))
                 rospy.sleep(.1)
                 
@@ -154,6 +154,7 @@ class bug2():
             
             self.move()
             
+            
             if isnan(side_dist):
                 print("cant see object")
                 self.move(target_side_dist / 2)
@@ -174,6 +175,8 @@ class bug2():
                     self.rotate(-direction * self.unit_rotation)
                     rospy.sleep(0.1)
                     side_dist = self.side_dist_helper(direction)
+                    
+            self.move()
 
             
             # Circumnavigate other way if at same point
