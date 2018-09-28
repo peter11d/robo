@@ -137,7 +137,7 @@ class bug2():
     
     def on_mline(self):
         (position, rotation) = self.get_odom()
-        return (abs(position.y) < self.linear_tolerance)
+        return (abs(position.y) < self.linear_tolerance * 3)
     
     def circumnavigate(self, direction=1):
         print("Starting circumnavigate!")
