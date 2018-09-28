@@ -151,16 +151,15 @@ class bug2():
             (position, rotation) = self.get_odom()
 
             side_dist = self.side_dist_helper(direction)
-            
-            self.move()
-            
+                        
             
             if isnan(side_dist):
                 print("cant see object")
-                self.move(target_side_dist / 2)
+                self.move(target_side_dist * .7)
                 while isnan(side_dist):
                     self.rotate(-direction * self.unit_rotation)
                     rospy.sleep(0.1)
+                    side_dist = self.side_dist_helper(direction)
                     
                 
             else:
