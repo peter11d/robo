@@ -151,14 +151,14 @@ class bug2():
                
         target_side_dist = .9 #sqrt(2) * object_distance + 2 * self.linear_tolerance
 
-        while not (self.on_mline() and position.x - self.linear_tolerance > hit_point.x) and not rospy.is_shutdown():
+        while not (self.on_mline() and position.x - self.linear_tolerance * 2> hit_point.x) and not rospy.is_shutdown():
             print("circumnavigating like a boss")
             (position, rotation) = self.get_odom()
 
             side_dist = self.side_dist_helper(direction)
                         
             
-            if isnan(side_dist):
+            if isnan(side_dist) and isnan(self.range_center):
                 print("cant see object")
                 self.move(target_side_dist * .5)
                 while isnan(side_dist):
@@ -167,7 +167,7 @@ class bug2():
                     
                 
             else:
-                while side_dist > (target_side_dist + self.linear_tolerance):
+                while side_dist > (target_side_dist + self.linear_tolerance) or isnan(side_dist):
                     print("rotating towards object")
                     self.rotate(-direction * self.unit_rotation)
                     side_dist = self.side_dist_helper(direction)
