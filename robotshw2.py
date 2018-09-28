@@ -44,7 +44,7 @@ class bug2():
                 rospy.signal_shutdown("tf Exception")
 
         self.follow_m_line()
-        while not at_goal():
+        while not self.at_goal():
             self.circumnavigate(1)
             self.follow_m_line()
             rospy.sleep(1)
