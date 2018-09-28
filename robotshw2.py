@@ -163,7 +163,6 @@ class bug2():
                 self.move(target_side_dist * .75)
                 while isnan(side_dist):
                     self.rotate(-direction * self.unit_rotation)
-                    rospy.sleep(0.1)
                     side_dist = self.side_dist_helper(direction)
                     
                 
@@ -181,7 +180,7 @@ class bug2():
                     rospy.sleep(0.1)
                     side_dist = self.side_dist_helper(direction)
             
-                
+            rospy.sleep(0.2) 
             self.move()
 
             
