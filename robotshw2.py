@@ -160,7 +160,7 @@ class bug2():
             
             if isnan(side_dist):
                 print("cant see object")
-                self.move(target_side_dist * .75)
+                self.move(target_side_dist * .5)
                 while isnan(side_dist):
                     self.rotate(-direction * self.unit_rotation)
                     side_dist = self.side_dist_helper(direction)
@@ -176,9 +176,11 @@ class bug2():
                     print("rotating to avoid object")
                     self.rotate(direction * self.unit_rotation)
                     side_dist = self.side_dist_helper(direction)
+
+                self.move()
                     
             
-            self.move()
+            
 
             
             # Circumnavigate other way if at same point
