@@ -18,7 +18,7 @@ class bug2():
         self.rate = 20
         self.r = rospy.Rate(self.rate)
         
-        self.linear_speed = rospy.get_param("~linear_speed", 0.4)        # meters per second was .4
+        self.linear_speed = rospy.get_param("~linear_speed", 0.4)        # meters per second
         self.linear_tolerance = rospy.get_param("~linear_speed", 0.05) 
         self.angular_speed = rospy.get_param("~angular_speed", 0.45)      # radians per second
         self.angular_tolerance = rospy.get_param("~angular_tolerance", radians(2)) # degrees to radians
@@ -55,7 +55,7 @@ class bug2():
 
     def move(self, dist=None, stop_at_mline=False):
         if dist is None:
-            dist = self.unit_distance * 3
+            dist = self.unit_distance
         
         (position, rotation) = self.get_odom()
                 
@@ -73,8 +73,8 @@ class bug2():
 
             (position, rotation) = self.get_odom()
 
-            if stop_at_mline and self.on_mline() and abs(distance_moved) > abs(dist) / 2:
-                break
+            #if stop_at_mline and self.on_mline() and abs(distance_moved) > abs(dist) / 2:
+            #    break
         
             # Compute the Euclidean distance from the start
             distance_moved = sqrt(pow((position.x - x_start), 2) + pow((position.y - y_start), 2))
