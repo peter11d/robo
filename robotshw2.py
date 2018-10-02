@@ -152,14 +152,18 @@ class bug2():
         target_side_dist = .9 #self.range_center + self.linear_tolerance * 2
         i = 0
         
-        while not (self.on_mline() and abs(10 - position.x + self.linear_tolerance * 3) < hit_distance_to_goal and position.x < 10) and not rospy.is_shutdown():
+        while not (self.on_mline() and abs(10 - position.x + self.linear_tolerance * 2) < hit_distance_to_goal and position.x < 10) and not rospy.is_shutdown():
             i += 1
 
             side_dist = self.side_dist_helper(direction)
                         
             
             if isnan(side_dist) and isnan(self.range_center):
+                (position_before, rotation) = self.get_odom()
                 self.move(target_side_dist * .7)
+                (position_after, rotation) = self.get_odom()
+                if position_before.y * position_after.y < 0:
+                    break
                 while isnan(side_dist):
                     self.rotate(-direction * self.unit_rotation)
                     side_dist = self.side_dist_helper(direction)
