@@ -107,7 +107,7 @@ class bug2():
         print("Following m_line")
         (position, rotation) = self.get_odom()
 
-        while (isnan(self.range_center) or self.range_center > 0.85) and not rospy.is_shutdown(): #was .75
+        while (isnan(self.range_center) or self.range_center > 0.8) and not rospy.is_shutdown(): #was .75
             (position, rotation) = self.get_odom()
 
             y = -position.y
@@ -149,7 +149,7 @@ class bug2():
         
         side_dist = self.side_dist_helper(direction)
                
-        target_side_dist = .9
+        target_side_dist = self.range_center
         
         while not (self.on_mline() and abs(10 - position.x + self.linear_tolerance * 2) < hit_distance_to_goal and position.x < 10) and not rospy.is_shutdown():
 
