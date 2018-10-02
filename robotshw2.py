@@ -147,11 +147,13 @@ class bug2():
         hit_point = position
         hit_distance_to_goal = abs(10 - position.x) 
         
-        side_dist = self.side_dist_helper(direction)
+        side_dist = self.side_dist_helper(direction) 
                
-        target_side_dist = self.range_center
+        target_side_dist = .9 #self.range_center + self.linear_tolerance * 2
+        i = 0
         
         while not (self.on_mline() and abs(10 - position.x + self.linear_tolerance * 2) < hit_distance_to_goal and position.x < 10) and not rospy.is_shutdown():
+            i += 1
 
             side_dist = self.side_dist_helper(direction)
                         
@@ -184,7 +186,7 @@ class bug2():
             
             # Circumnavigate other way if at same point
             distance = sqrt(pow((position.x - hit_point.x), 2) + pow((position.y - hit_point.y), 2))
-            if distance < self.linear_tolerance * 1.5:
+            if distance < self.linear_tolerance * 3 and i >= 10:
                 print(distance)
                 print("Impossible to pass")
                 self.shutdown()
