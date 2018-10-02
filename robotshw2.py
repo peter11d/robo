@@ -53,7 +53,7 @@ class bug2():
         print("Goal Reached")
 
 
-    def move(self, dist=None, stop_at_mline=False):
+    def move(self, dist=None):
         if dist is None:
             dist = self.unit_distance
         
@@ -73,9 +73,6 @@ class bug2():
 
             (position, rotation) = self.get_odom()
 
-            #if stop_at_mline and self.on_mline() and abs(distance_moved) > abs(dist) / 2:
-            #    break
-        
             # Compute the Euclidean distance from the start
             distance_moved = sqrt(pow((position.x - x_start), 2) + pow((position.y - y_start), 2))
         
@@ -107,7 +104,7 @@ class bug2():
         print("Following m_line")
         (position, rotation) = self.get_odom()
 
-        while (isnan(self.range_center) or self.range_center > 0.8) and not rospy.is_shutdown(): #was .75
+        while (isnan(self.range_center) or self.range_center > 0.8) and not rospy.is_shutdown():
             (position, rotation) = self.get_odom()
 
             y = -position.y
@@ -119,7 +116,6 @@ class bug2():
                 
 
             if self.at_goal():
-                print("At Goal")
                 return
     
             self.move()
@@ -149,7 +145,7 @@ class bug2():
         
         side_dist = self.side_dist_helper(direction) 
                
-        target_side_dist = .9 #self.range_center + self.linear_tolerance * 2
+        target_side_dist = .9
         i = 0
         
         while not (self.on_mline() and abs(10 - position.x + self.linear_tolerance * 2) < hit_distance_to_goal and position.x < 10) and not rospy.is_shutdown():
@@ -182,9 +178,6 @@ class bug2():
                     
                 self.move()
                     
-            #if self.on_mline() and abs(hit_point.x - position.x) < self.unit_distance * 1.5:.5
-            #    print("impossible to pass")
-            #    self.shutdown()
             (position, rotation) = self.get_odom()
 
             
@@ -194,11 +187,8 @@ class bug2():
                 print(distance)
                 print("Impossible to pass")
                 self.shutdown()
-                   # if direction != 1:
-                   #     print("FAIL HERE")
-                   # self.circumnavigate(-1)
-                   # break
-            
+
+                
     def shutdown(self):
         rospy.loginfo("Stopping the robot...")
         self.vel_pub.publish(Twist())
