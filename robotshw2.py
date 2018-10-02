@@ -17,7 +17,7 @@ class bug2():
         self.rate = 20
         self.r = rospy.Rate(self.rate)
         
-        self.linear_speed = rospy.get_param("~linear_speed", 0.4)        # meters per second
+        self.linear_speed = rospy.get_param("~linear_speed", 0.4)        # meters per second was .4
         self.linear_tolerance = rospy.get_param("~linear_speed", 0.05) 
         self.angular_speed = rospy.get_param("~angular_speed", 0.45)      # radians per second
         self.angular_tolerance = rospy.get_param("~angular_tolerance", radians(2)) # degrees to radians
@@ -49,12 +49,12 @@ class bug2():
             self.follow_m_line()
             rospy.sleep(1)
             
-        print("GOAL REACHED")
+        print("Goal Reached")
 
 
-    def move(self, dist=None):
+    def move(self, dist=None, stop_at_mline=False):
         if dist is None:
-            dist = self.unit_distance
+            dist = self.unit_distance * 3
         
         (position, rotation) = self.get_odom()
                 
@@ -71,6 +71,9 @@ class bug2():
             self.vel_pub.publish(cmd)
 
             (position, rotation) = self.get_odom()
+
+            if stop_at_mline and self.on_mline() and abs(distance_moved) > abs(dist) / 2:
+                break
         
             # Compute the Euclidean distance from the start
             distance_moved = sqrt(pow((position.x - x_start), 2) + pow((position.y - y_start), 2))
@@ -92,7 +95,6 @@ class bug2():
     
         while abs(normalize_angle(rotation - initial_rotation)) + self.angular_tolerance < abs(radians(angle)) and not rospy.is_shutdown():
             self.vel_pub.publish(cmd)
-        
             (position, rotation) = self.get_odom()
         
         cmd = Twist()
@@ -101,11 +103,10 @@ class bug2():
 
 
     def follow_m_line(self):
-        print("following m_line")
+        print("Following m_line")
         (position, rotation) = self.get_odom()
-        print(position)
-        print(rotation)
-        while (isnan(self.range_center) or self.range_center > 0.75) and not rospy.is_shutdown():
+
+        while (isnan(self.range_center) or self.range_center > 0.85) and not rospy.is_shutdown(): #was .75
             (position, rotation) = self.get_odom()
 
             y = -position.y
@@ -117,10 +118,8 @@ class bug2():
                 
 
             if self.at_goal():
-                print("AT GOAL MOFOS!!!")
+                print("At Goal")
                 return
-            #if abs(rotation) > abs(self.angular_tolerance):
-            #    self.rotate(degrees(-0.25 * rotation))
     
             self.move()
             rospy.sleep(.1)
@@ -140,26 +139,24 @@ class bug2():
         return (abs(position.y) < self.linear_tolerance * 3)
     
     def circumnavigate(self, direction=1):
-        print("Starting circumnavigate!")
+        print("Circumnavigating")
         rospy.sleep(0.5)
         
         (position, rotation) = self.get_odom()
         hit_point = position
-        #object_distance = self.min_dist
+        hit_distance_to_goal = abs(10 - position.x) 
         
         side_dist = self.side_dist_helper(direction)
                
         target_side_dist = .9 #sqrt(2) * object_distance + 2 * self.linear_tolerance
 
-        while not (self.on_mline() and position.x - self.linear_tolerance * 2> hit_point.x) and not rospy.is_shutdown():
-            print("circumnavigating like a boss")
+        while not (self.on_mline() and abs(10 - position.x + self.linear_tolerance * 2) < hit_distance_to_goal) and not rospy.is_shutdown():
             (position, rotation) = self.get_odom()
 
             side_dist = self.side_dist_helper(direction)
                         
             
             if isnan(side_dist) and isnan(self.range_center):
-                print("cant see object")
                 self.move(target_side_dist * .5)
                 while isnan(side_dist):
                     self.rotate(-direction * self.unit_rotation)
@@ -168,16 +165,16 @@ class bug2():
                 
             else:
                 while side_dist > (target_side_dist + self.linear_tolerance) or isnan(side_dist):
-                    print("rotating towards object")
                     self.rotate(-direction * self.unit_rotation)
                     side_dist = self.side_dist_helper(direction)
                 
                 while self.range_center < .75 or side_dist < (target_side_dist + 2 * self.linear_tolerance):
-                    print("rotating to avoid object")
                     self.rotate(direction * self.unit_rotation)
                     side_dist = self.side_dist_helper(direction)
 
-                self.move()
+                self.rotate(direction * self.unit_rotation * 1.5)
+                    
+                self.move(None, True)
                     
             
             
@@ -191,9 +188,6 @@ class bug2():
                     self.circumnavigate(-1)
                     break'''
             
-        print("Circumnativation complete!")
-        print(position)
-
     def shutdown(self):
         rospy.loginfo("Stopping the robot...")
         self.vel_pub.publish(Twist())
