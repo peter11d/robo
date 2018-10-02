@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import rospy
 import tf
+import os
 from geometry_msgs.msg import Twist, Point, Quaternion
 from sensor_msgs.msg import LaserScan
 from math import radians, degrees, copysign, sqrt, pow, pi, atan2, isnan
@@ -150,14 +151,13 @@ class bug2():
                
         target_side_dist = .9 #sqrt(2) * object_distance + 2 * self.linear_tolerance
 
-        while not (self.on_mline() and abs(10 - position.x + self.linear_tolerance * 2) < hit_distance_to_goal) and not rospy.is_shutdown():
-            (position, rotation) = self.get_odom()
+        while not (self.on_mline() and abs(10 - position.x + self.linear_tolerance * 2) < hit_distance_to_goal and position.x < 10) and not rospy.is_shutdown():
 
             side_dist = self.side_dist_helper(direction)
                         
             
             if isnan(side_dist) and isnan(self.range_center):
-                self.move(target_side_dist * .5)
+                self.move(target_side_dist * .7)
                 while isnan(side_dist):
                     self.rotate(-direction * self.unit_rotation)
                     side_dist = self.side_dist_helper(direction)
@@ -172,26 +172,32 @@ class bug2():
                     self.rotate(direction * self.unit_rotation)
                     side_dist = self.side_dist_helper(direction)
 
-                self.rotate(direction * self.unit_rotation * 1.5)
+                self.rotate(direction * self.unit_rotation * 1.85)
                     
                 self.move(None, True)
                     
-            
-            
+            #if self.on_mline() and abs(hit_point.x - position.x) < self.unit_distance * 1.5:.5
+            #    print("impossible to pass")
+            #    self.shutdown()
+            (position, rotation) = self.get_odom()
 
             
             # Circumnavigate other way if at same point
-            '''distance = sqrt(pow((position.x - hit_point.x), 2) + pow((position.y - hit_point.y), 2))
-            if distance < self.linear_tolerance:
-                    if direction != 1:
-                        print("FAIL HERE")
-                    self.circumnavigate(-1)
-                    break'''
+            distance = sqrt(pow((position.x - hit_point.x), 2) + pow((position.y - hit_point.y), 2))
+            if distance < self.linear_tolerance * 2.5:
+                print(distance)
+                print("Impossible to pass")
+                self.shutdown()
+                   # if direction != 1:
+                   #     print("FAIL HERE")
+                   # self.circumnavigate(-1)
+                   # break
             
     def shutdown(self):
         rospy.loginfo("Stopping the robot...")
         self.vel_pub.publish(Twist())
         rospy.sleep(1)
+        os._exit(0)
     
     def scan_callback(self, msg):
         self.msg_len = len(msg.ranges)
