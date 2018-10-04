@@ -126,9 +126,6 @@ class bug2():
             rospy.sleep(.1)
         print("Object encountered")
         
-        
-    def side_dist_helper(self, direction):
-        return (self.range_right if direction == 1 else self.range_left)
 
     def at_goal(self):
         # Helper function to check if at goal, uses 3 * linear_tolerance as tolerance
@@ -141,7 +138,7 @@ class bug2():
         (position, rotation) = self.get_odom()
         return (abs(position.y) < self.linear_tolerance * 3)
     
-    def circumnavigate(self, direction=1):
+    def circumnavigate(self):
         # Handles circumnavigating obstacles until back on m_line and closer to goal
         print("Circumnavigating")
         rospy.sleep(0.5)
@@ -150,7 +147,7 @@ class bug2():
         hit_point = position
         hit_distance_to_goal = abs(10 - position.x) 
         
-        side_dist = self.side_dist_helper(direction)
+        side_dist = self.range_right
                
         target_side_dist = .9
         
@@ -161,7 +158,7 @@ class bug2():
         while not (self.on_mline() and abs(10 - position.x + self.linear_tolerance * 2) < hit_distance_to_goal and position.x < 10) and not rospy.is_shutdown():
             i += 1
 
-            side_dist = self.side_dist_helper(direction)
+            side_dist = self.range_right
                         
             # Handle when obstacle is no longer seen while circumnavigating
             if isnan(side_dist) and isnan(self.range_center):
@@ -171,23 +168,23 @@ class bug2():
                 if position_before.y * position_after.y < 0:
                     break
                 while isnan(side_dist):
-                    self.rotate(-direction * self.unit_rotation)
-                    side_dist = self.side_dist_helper(direction)
+                    self.rotate(-self.unit_rotation)
+                    side_dist = self.range_right
                     
                 
             else:
                 # rotate towards obstacle if too far
                 while side_dist > (target_side_dist + self.linear_tolerance) or isnan(side_dist):
-                    self.rotate(-direction * self.unit_rotation)
-                    side_dist = self.side_dist_helper(direction)
+                    self.rotate(-self.unit_rotation)
+                    side_dist = self.range_right
 
                 # rotate away from obstacle if too close
                 while self.range_center < .75 or side_dist < (target_side_dist + 2 * self.linear_tolerance):
-                    self.rotate(direction * self.unit_rotation)
-                    side_dist = self.side_dist_helper(direction)
+                    self.rotate(self.unit_rotation)
+                    side_dist = self.range_right
 
                 # rotate away from the obstacle a bit to be safe
-                self.rotate(direction * self.unit_rotation * 1.85)
+                self.rotate(self.unit_rotation * 1.85)
 
                 self.move()
 
