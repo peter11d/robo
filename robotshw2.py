@@ -61,7 +61,7 @@ class bug2():
     def move(self, dist=None):
         # Move helper function, moves unit_distance if not distance is provided
         if dist is None:
-            dist = self.unit_distance * 3
+            dist = self.unit_distance
 
         (position, rotation) = self.get_odom()
    
@@ -125,10 +125,9 @@ class bug2():
                 
             if self.at_goal():
                 return
-    
-            rospy.sleep(.2)
+
             self.move()
-            rospy.sleep(.1)
+            
         print("Object encountered")
         
 
@@ -151,9 +150,7 @@ class bug2():
         (position, rotation) = self.get_odom()
         hit_point = position
         hit_distance_to_goal = abs(10 - position.x) 
-        
-        side_dist = self.range_right
-               
+                       
         target_side_dist = .9
         
         # Loop counter used to ensure robot has traveled reasonably far before deciding if world is impossible
@@ -162,41 +159,32 @@ class bug2():
         # Circumnavigation loop: if not on m_line and closer to goal, then keep circumnavigating
         while not (self.on_mline() and abs(10 - position.x + self.linear_tolerance * 2) < hit_distance_to_goal and position.x < 10) and not rospy.is_shutdown():
             i += 1
-
-            side_dist = self.range_right
                         
             # Handle when obstacle is no longer seen while circumnavigating
-            if isnan(side_dist) and isnan(self.range_center):
-                rospy.sleep(0.2)
-                side_dist = self.range_right
-                print("first object not seen")
-                if isnan(side_dist) and isnan(self.range_center):
-                    print('object not seen')
-                    (position_before, rotation) = self.get_odom()
-                    self.move(target_side_dist * .7)
-                    (position_after, rotation) = self.get_odom()
-                    if position_before.y * position_after.y < 0:
-                        break
-                    while isnan(side_dist):
-                        self.rotate(-self.unit_rotation)
-                        side_dist = self.range_right
+            if isnan(self.range_right) and isnan(self.range_center):
+                print('object not seen')
+                (position_before, rotation) = self.get_odom()
+                self.move(target_side_dist * .7)
+                (position_after, rotation) = self.get_odom()
+                if position_before.y * position_after.y < 0:
+                    break
+                while isnan(self.range_right):
+                    self.rotate(-self.unit_rotation)
                     
                 
             else:
                 # rotate towards obstacle if too far
-                while side_dist > (target_side_dist + self.linear_tolerance) or isnan(side_dist) and not self.range_center < .8:
+                while self.range_right > (target_side_dist + self.linear_tolerance) or isnan(self.range_right) and not self.range_center < .8:
                     self.rotate(-self.unit_rotation)
-                    side_dist = self.range_right
 
                 # rotate away from obstacle if too close
                 while self.range_center < .75 or self.min_right < (target_side_dist + 2 * self.linear_tolerance) or self.range_center < .8:
                     self.rotate(self.unit_rotation)
-                    side_dist = self.range_right
 
                 # rotate away from the obstacle a bit to be safe
                 self.rotate(self.unit_rotation * 2.2)
 
-                self.move()
+                self.move(3 * self.unit_distance)
 
             (position, rotation) = self.get_odom()
 
@@ -222,6 +210,8 @@ class bug2():
         self.range_left = msg.ranges[-1]
         self.range_center = msg.ranges[self.msg_len // 2]
         self.range_right = msg.ranges[0]
+        self.range_right_check1 = msg.ranges[1]
+        self.range_right_check2 = msg.ranges[2]
 
         self.min_right = min(msg.ranges[0:self.msg_len // 2])
 
