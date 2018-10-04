@@ -165,15 +165,19 @@ class bug2():
                         
             # Handle when obstacle is no longer seen while circumnavigating
             if isnan(side_dist) and isnan(self.range_center):
-                print('object not seen')
-                (position_before, rotation) = self.get_odom()
-                self.move(target_side_dist * .7)
-                (position_after, rotation) = self.get_odom()
-                if position_before.y * position_after.y < 0:
-                    break
-                while isnan(side_dist):
-                    self.rotate(-self.unit_rotation)
-                    side_dist = self.range_right
+                rospy.sleep(0.2)
+                side_dist = self.range_right
+                print("first object not seen")
+                if isnan(side_dist) and isnan(self.range_center):
+                    print('object not seen')
+                    (position_before, rotation) = self.get_odom()
+                    self.move(target_side_dist * .7)
+                    (position_after, rotation) = self.get_odom()
+                    if position_before.y * position_after.y < 0:
+                        break
+                    while isnan(side_dist):
+                        self.rotate(-self.unit_rotation)
+                        side_dist = self.range_right
                     
                 
             else:
