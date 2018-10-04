@@ -58,7 +58,7 @@ class bug2():
     def move(self, dist=None):
         # Move helper function, moves unit_distance if not distance is provided
         if dist is None:
-            dist = self.unit_distance
+            dist = self.unit_distance * 3
 
         (position, rotation) = self.get_odom()
    
