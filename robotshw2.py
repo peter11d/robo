@@ -72,7 +72,7 @@ class bug2():
         cmd.linear.x = (self.linear_speed if dist >= 0 else -self.linear_speed)
 
         # Keep moving at linear_speed until you travel >= inputted distance
-        while abs(distance_moved) < abs(dist) and not rospy.is_shutdown():
+        while abs(distance_moved) < abs(dist) and not rospy.is_shutdown() and not self.range_center < .4:
             self.vel_pub.publish(cmd)
             (position, rotation) = self.get_odom()
 
@@ -162,6 +162,7 @@ class bug2():
                         
             # Handle when obstacle is no longer seen while circumnavigating
             if isnan(side_dist) and isnan(self.range_center):
+                print('object not seen')
                 (position_before, rotation) = self.get_odom()
                 self.move(target_side_dist * .7)
                 (position_after, rotation) = self.get_odom()
@@ -174,12 +175,12 @@ class bug2():
                 
             else:
                 # rotate towards obstacle if too far
-                while side_dist > (target_side_dist + self.linear_tolerance) or isnan(side_dist):
+                while side_dist > (target_side_dist + self.linear_tolerance) or isnan(side_dist) and not self.range_center < .8:
                     self.rotate(-self.unit_rotation)
                     side_dist = self.range_right
 
                 # rotate away from obstacle if too close
-                while self.range_center < .75 or side_dist < (target_side_dist + 2 * self.linear_tolerance):
+                while self.range_center < .75 or self.min_right < (target_side_dist + 2 * self.linear_tolerance) or self.range_center < .8:
                     self.rotate(self.unit_rotation)
                     side_dist = self.range_right
 
@@ -212,6 +213,8 @@ class bug2():
         self.range_left = msg.ranges[-1]
         self.range_center = msg.ranges[self.msg_len // 2]
         self.range_right = msg.ranges[0]
+
+        self.min_right = min(msg.ranges[0:self.msg_len // 2])
 
         self.min_dist = min(msg.ranges)
         self.min_indx = msg.ranges.index(self.min_dist)
