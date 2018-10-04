@@ -4,7 +4,7 @@ import tf
 import os
 from geometry_msgs.msg import Twist, Point, Quaternion
 from sensor_msgs.msg import LaserScan
-from math import radians, degrees, sqrt, pow, atan2, isnan
+from math import radians, pi, degrees, sqrt, pow, atan2, isnan
 from rbx1_nav.transform_utils import quat_to_angle, normalize_angle
 
 
@@ -119,9 +119,13 @@ class bug2():
             x = 10 - position.x
             angle = -rotation + atan2(y, x)
             
-            if abs(angle) > abs(3 * self.angular_tolerance):
+            if x < 0:
+              self.rotate(degrees(-rotation + pi))  
+              rospy.sleep(.2)
+                
+            elif abs(angle) > abs(3 * self.angular_tolerance):
                 self.rotate(degrees(angle))
-                rospy.sleep(.1)
+                rospy.sleep(.2)
                 
             if self.at_goal():
                 return
