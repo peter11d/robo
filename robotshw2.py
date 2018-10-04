@@ -48,7 +48,7 @@ class bug2():
         # Top level loop
         self.follow_m_line()
         while not self.at_goal():
-            self.circumnavigate(1)
+            self.circumnavigate()
             self.follow_m_line()
             rospy.sleep(1)
             
