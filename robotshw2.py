@@ -7,20 +7,21 @@ from sensor_msgs.msg import LaserScan
 from math import radians, degrees, copysign, sqrt, pow, pi, atan2, isnan
 from rbx1_nav.transform_utils import quat_to_angle, normalize_angle
 
+
 class bug2():
-    
+
     def __init__(self):
         rospy.init_node('bug', anonymous=False)
         rospy.on_shutdown(self.shutdown)
-        
+
         self.vel_pub = rospy.Publisher('cmd_vel_mux/input/navi', Twist, queue_size=1)
         self.scan_sub = rospy.Subscriber('scan', LaserScan, self.scan_callback)
         self.rate = 20
         self.r = rospy.Rate(self.rate)
-        
-        self.linear_speed = rospy.get_param("~linear_speed", 0.4)        # meters per second
-        self.linear_tolerance = rospy.get_param("~linear_speed", 0.05) 
-        self.angular_speed = rospy.get_param("~angular_speed", 0.45)      # radians per second
+
+        self.linear_speed = rospy.get_param("~linear_speed", 0.4)                  # meters per second
+        self.linear_tolerance = rospy.get_param("~linear_speed", 0.05)
+        self.angular_speed = rospy.get_param("~angular_speed", 0.45)               # radians per second
         self.angular_tolerance = rospy.get_param("~angular_tolerance", radians(2)) # degrees to radians
         self.unit_distance = 2 * self.linear_tolerance
         self.unit_rotation = 7 * self.angular_speed
@@ -30,7 +31,7 @@ class bug2():
 
         self.base_frame = rospy.get_param('~base_frame', '/base_link')
         self.odom_frame = rospy.get_param('~odom_frame', '/odom')
-        
+
         self.odom_frame = '/odom'
 
         try:
@@ -44,6 +45,7 @@ class bug2():
                 rospy.loginfo("Cannot find transform between /odom and /base_link or /base_footprint")
                 rospy.signal_shutdown("tf Exception")
 
+        # Top level loop
         self.follow_m_line()
         while not self.at_goal():
             self.circumnavigate(1)
@@ -54,34 +56,36 @@ class bug2():
 
 
     def move(self, dist=None):
+        # Move helper function, moves unit_distance if not distance is provided
         if dist is None:
             dist = self.unit_distance
-        
+
         (position, rotation) = self.get_odom()
-                
+   
         x_start = position.x
         y_start = position.y
-    
+
         # Keep track of the distance traveled
         distance_moved = 0
-    
+
         cmd = Twist()
         cmd.linear.x = (self.linear_speed if dist >= 0 else -self.linear_speed)
-    
+
+        # Keep moving at linear_speed until you travel >= inputted distance
         while abs(distance_moved) < abs(dist) and not rospy.is_shutdown():
             self.vel_pub.publish(cmd)
-
             (position, rotation) = self.get_odom()
 
             # Compute the Euclidean distance from the start
             distance_moved = sqrt(pow((position.x - x_start), 2) + pow((position.y - y_start), 2))
-        
+
         cmd = Twist()
         self.vel_pub.publish(cmd)
         self.r.sleep()
 
-        
+
     def rotate(self, angle=None):
+        # Rotation helper function, rotates unit_rotation if angle (in degrees) not provided
         if angle is None:
             angle = self.unit_rotation
         
@@ -101,6 +105,7 @@ class bug2():
 
 
     def follow_m_line(self):
+        # Commands robot to follow the m_line until robot is at goal or encounters obstacle
         print("Following m_line")
         (position, rotation) = self.get_odom()
 
@@ -114,7 +119,6 @@ class bug2():
                 self.rotate(degrees(angle))
                 rospy.sleep(.1)
                 
-
             if self.at_goal():
                 return
     
@@ -127,15 +131,18 @@ class bug2():
         return (self.range_right if direction == 1 else self.range_left)
 
     def at_goal(self):
+        # Helper function to check if at goal, uses 3 * linear_tolerance as tolerance
         (position, rotation) = self.get_odom()
         return (10 - 3 * self.linear_tolerance < position.x < 10 + 3 * self.linear_tolerance) and (3 * -self.linear_tolerance < position.y < 3 * self.linear_tolerance)
 
     
     def on_mline(self):
+        # Helper function to check if robot is on m_line, within 3 * linear_tolerance
         (position, rotation) = self.get_odom()
         return (abs(position.y) < self.linear_tolerance * 3)
     
     def circumnavigate(self, direction=1):
+        # Handles circumnavigating obstacles until back on m_line and closer to goal
         print("Circumnavigating")
         rospy.sleep(0.5)
         
@@ -143,17 +150,20 @@ class bug2():
         hit_point = position
         hit_distance_to_goal = abs(10 - position.x) 
         
-        side_dist = self.side_dist_helper(direction) 
+        side_dist = self.side_dist_helper(direction)
                
         target_side_dist = .9
+        
+        # Loop counter used to ensure robot has traveled reasonably far before deciding if world is impossible
         i = 0
         
+        # Circumnavigation loop: if not on m_line and closer to goal, then keep circumnavigating
         while not (self.on_mline() and abs(10 - position.x + self.linear_tolerance * 2) < hit_distance_to_goal and position.x < 10) and not rospy.is_shutdown():
             i += 1
 
             side_dist = self.side_dist_helper(direction)
                         
-            
+            # Handle when obstacle is no longer seen while circumnavigating
             if isnan(side_dist) and isnan(self.range_center):
                 (position_before, rotation) = self.get_odom()
                 self.move(target_side_dist * .7)
@@ -166,21 +176,23 @@ class bug2():
                     
                 
             else:
+                # rotate towards obstacle if too far
                 while side_dist > (target_side_dist + self.linear_tolerance) or isnan(side_dist):
                     self.rotate(-direction * self.unit_rotation)
                     side_dist = self.side_dist_helper(direction)
-                
+
+                # rotate away from obstacle if too close
                 while self.range_center < .75 or side_dist < (target_side_dist + 2 * self.linear_tolerance):
                     self.rotate(direction * self.unit_rotation)
                     side_dist = self.side_dist_helper(direction)
 
+                # rotate away from the obstacle a bit to be safe
                 self.rotate(direction * self.unit_rotation * 1.85)
-                    
+
                 self.move()
-                    
+
             (position, rotation) = self.get_odom()
 
-            
             # Circumnavigate other way if at same point
             distance = sqrt(pow((position.x - hit_point.x), 2) + pow((position.y - hit_point.y), 2))
             if distance < self.linear_tolerance * 5 and i >= 10:
@@ -190,21 +202,23 @@ class bug2():
 
                 
     def shutdown(self):
+        #Shutdown isntructions
         rospy.loginfo("Stopping the robot...")
         self.vel_pub.publish(Twist())
         rospy.sleep(1)
         os._exit(0)
     
     def scan_callback(self, msg):
+        # Gets input from laser scanner and stores relevant values into variables
         self.msg_len = len(msg.ranges)
-        
+
         self.range_left = msg.ranges[-1]
         self.range_center = msg.ranges[self.msg_len // 2]
         self.range_right = msg.ranges[0]
-        
+
         self.min_dist = min(msg.ranges)
         self.min_indx = msg.ranges.index(self.min_dist)
-        
+
     def get_odom(self):
         # Get the current transform between the odom and base frames
         try:
@@ -214,6 +228,6 @@ class bug2():
             return
 
         return (Point(*trans), quat_to_angle(Quaternion(*rot)))
-    
+
 if __name__ == '__main__':
     bug2()
