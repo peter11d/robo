@@ -184,7 +184,7 @@ class bug2():
                     side_dist = self.range_right
 
                 # rotate away from the obstacle a bit to be safe
-                self.rotate(self.unit_rotation * 1.85)
+                self.rotate(self.unit_rotation * 2.2)
 
                 self.move()
 
