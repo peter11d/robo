@@ -4,7 +4,7 @@ import tf
 import os
 from geometry_msgs.msg import Twist, Point, Quaternion
 from sensor_msgs.msg import LaserScan
-from math import radians, degrees, sqrt, pow, atan2, isnan
+from math import radians, pi, degrees, sqrt, pow, atan2, isnan
 from rbx1_nav.transform_utils import quat_to_angle, normalize_angle
 
 
@@ -119,7 +119,11 @@ class bug2():
             x = 10 - position.x
             angle = -rotation + atan2(y, x)
             
-            if abs(angle) > abs(3 * self.angular_tolerance):
+            if x < 0:
+                self.rotate(degrees(-rotation + pi))
+                rospy.sleep(.1)
+            
+            elif abs(angle) > abs(3 * self.angular_tolerance):
                 self.rotate(degrees(angle))
                 rospy.sleep(.1)
                 
@@ -161,7 +165,7 @@ class bug2():
             i += 1
                         
             # Handle when obstacle is no longer seen while circumnavigating
-            if isnan(self.range_right) and isnan(self.range_center):
+            if isnan(self.range_right) and isnan(self.range_right_check) and isnan(self.range_center):
                 print('object not seen')
                 (position_before, rotation) = self.get_odom()
                 self.move(target_side_dist * .7)
@@ -210,8 +214,7 @@ class bug2():
         self.range_left = msg.ranges[-1]
         self.range_center = msg.ranges[self.msg_len // 2]
         self.range_right = msg.ranges[0]
-        self.range_right_check1 = msg.ranges[1]
-        self.range_right_check2 = msg.ranges[2]
+        self.range_right_check = msg.ranges[1]
 
         self.min_right = min(msg.ranges[0:self.msg_len // 2])
 
