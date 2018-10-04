@@ -4,7 +4,7 @@ import tf
 import os
 from geometry_msgs.msg import Twist, Point, Quaternion
 from sensor_msgs.msg import LaserScan
-from math import radians, degrees, copysign, sqrt, pow, pi, atan2, isnan
+from math import radians, degrees, sqrt, pow, atan2, isnan
 from rbx1_nav.transform_utils import quat_to_angle, normalize_angle
 
 
