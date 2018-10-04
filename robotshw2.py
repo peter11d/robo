@@ -4,7 +4,7 @@ import tf
 import os
 from geometry_msgs.msg import Twist, Point, Quaternion
 from sensor_msgs.msg import LaserScan
-from math import radians, pi, degrees, sqrt, pow, atan2, isnan
+from math import radians, degrees, sqrt, pow, atan2, isnan
 from rbx1_nav.transform_utils import quat_to_angle, normalize_angle
 
 
@@ -119,11 +119,7 @@ class bug2():
             x = 10 - position.x
             angle = -rotation + atan2(y, x)
             
-            if x < 0:
-                self.rotate(degrees(-rotation + pi))
-                rospy.sleep(.1)
-            
-            elif abs(angle) > abs(3 * self.angular_tolerance):
+            if abs(angle) > abs(3 * self.angular_tolerance):
                 self.rotate(degrees(angle))
                 rospy.sleep(.1)
                 
@@ -154,7 +150,9 @@ class bug2():
         (position, rotation) = self.get_odom()
         hit_point = position
         hit_distance_to_goal = abs(10 - position.x) 
-                       
+        
+        side_dist = self.side_dist_helper()
+               
         target_side_dist = .9
         
         # Loop counter used to ensure robot has traveled reasonably far before deciding if world is impossible
@@ -163,27 +161,32 @@ class bug2():
         # Circumnavigation loop: if not on m_line and closer to goal, then keep circumnavigating
         while not (self.on_mline() and abs(10 - position.x + self.linear_tolerance * 2) < hit_distance_to_goal and position.x < 10) and not rospy.is_shutdown():
             i += 1
+
+            side_dist = self.side_dist_helper()
                         
             # Handle when obstacle is no longer seen while circumnavigating
-            if isnan(self.range_right) and isnan(self.range_right_check) and isnan(self.range_center):
+            if isnan(side_dist) and isnan(self.range_center):
                 print('object not seen')
                 (position_before, rotation) = self.get_odom()
                 self.move(target_side_dist * .7)
                 (position_after, rotation) = self.get_odom()
                 if position_before.y * position_after.y < 0:
                     break
-                while isnan(self.range_right):
+                while isnan(side_dist):
                     self.rotate(-self.unit_rotation)
+                    side_dist = self.side_dist_helper()
                     
                 
             else:
                 # rotate towards obstacle if too far
-                while self.range_right > (target_side_dist + self.linear_tolerance) or isnan(self.range_right) and not self.range_center < .8:
+                while side_dist > (target_side_dist + self.linear_tolerance) or isnan(side_dist) and not self.range_center < .8:
                     self.rotate(-self.unit_rotation)
+                    side_dist = self.side_dist_helper()
 
                 # rotate away from obstacle if too close
                 while self.range_center < .75 or self.min_right < (target_side_dist + 2 * self.linear_tolerance) or self.range_center < .8:
                     self.rotate(self.unit_rotation)
+                    side_dist = self.side_dist_helper()
 
                 # rotate away from the obstacle a bit to be safe
                 self.rotate(self.unit_rotation * 2.2)
@@ -199,6 +202,11 @@ class bug2():
                 print("Impossible to pass")
                 self.shutdown()
 
+    def side_dist_helper(self):
+        # Helper function that deals with incorrect NaN
+        if isnan(self.range_right):
+            return self.range_right_check
+        return self.range_right
                 
     def shutdown(self):
         #Shutdown isntructions
