@@ -118,6 +118,7 @@ class bug2():
             y = -position.y
             x = 10 - position.x
             angle = -rotation + atan2(y, x)
+            
             if abs(angle) > abs(3 * self.angular_tolerance):
                 self.rotate(degrees(angle))
                 rospy.sleep(.1)
@@ -125,6 +126,7 @@ class bug2():
             if self.at_goal():
                 return
     
+            rospy.sleep(.2)
             self.move()
             rospy.sleep(.1)
         print("Object encountered")
