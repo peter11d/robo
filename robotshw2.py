@@ -53,7 +53,10 @@ class bug2():
             rospy.sleep(1)
             
         print("Goal Reached")
-
+        (position, rotation) = self.get_odom()
+        print(position)
+        rospy.sleep(3)
+        
 
     def move(self, dist=None):
         # Move helper function, moves unit_distance if not distance is provided
