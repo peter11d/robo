@@ -327,7 +327,9 @@ if __name__ == "__main__":
                     dist_dict[point] = curr
                     point_dict[point] = smallest_dist
             
-            
-        print(goal)
-        print(type(goal))
+
+        a = point_dict[tuple(goal)]
+        b = point_dict[a]        
+        print (a)
+        print (b)
         
