@@ -290,7 +290,7 @@ if __name__ == "__main__":
             point_dict[vertex] = None
             dist_dict[vertex] = sys.maxsize
         
-        start = (0,0)
+        start = (0.0,0.0)
         
         dist_dict[start] = 0
         
