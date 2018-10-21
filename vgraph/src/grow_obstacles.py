@@ -314,6 +314,8 @@ if __name__ == "__main__":
             neighbors = set(neighbors)
             
             for point in neighbors:
+                print("POINTS")
+                print(point)
                 if point not in vertices:
                     continue
                 curr = dist_dict[smallest_dict] + get_distance(smallest_dist, point)
