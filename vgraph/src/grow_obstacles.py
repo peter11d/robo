@@ -296,7 +296,8 @@ if __name__ == "__main__":
         dist_dict[start] = 0
         
         while len(vertices) > 0:
-            smallest_dist = min(dist_dict, key=dist_dict.get)
+            
+            smallest_dist = min(dist_dict, key=lambda k: dist_dict[k] if k in vertices else sys.maxsize)
             
             print(smallest_dist)
             print(smallest_dist in vertices)
