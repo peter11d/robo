@@ -307,10 +307,11 @@ if __name__ == "__main__":
             # Find neighbors of shortest_dist point
             neighbors = []
             for v1, v2 in lines:
-                print("{} {}".format(v1, v2))
                 if v1 == smallest_dist:
+                    print("1 {} {}".format(v1, v2))
                     neighbors.append(v2)
                 elif v2 == smallest_dist:
+                    print("2 {} {}".format(v1, v2))
                     neighbors.append(v1)
             neighbors = set(neighbors)
             print("NEIGHBORS")
