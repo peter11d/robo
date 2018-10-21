@@ -322,7 +322,7 @@ if __name__ == "__main__":
                 print(point)
                 if point not in vertices:
                     continue
-                curr = dist_dict[smallest_dict] + get_distance(smallest_dist, point)
+                curr = dist_dict[smallest_dist] + get_distance(smallest_dist, point)
                 if dist_dict[point] > curr:
                     dist_dict[point] = curr
                     point_dict[point] = smallest_dict
