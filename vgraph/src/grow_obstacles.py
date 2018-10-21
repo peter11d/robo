@@ -328,8 +328,17 @@ if __name__ == "__main__":
                     point_dict[point] = smallest_dist
             
 
-        a = point_dict[tuple(goal_in_cm)]
-        b = point_dict[a]        
-        print (a)
-        print (b)
+        path = []
+        curr_point = tuple(goal_in_cm)
+        
+        while True:
+            path.append(curr_point)
+            if curr_point != start:
+                curr_point = point_dict[curr_point]
+            else:
+                break
+            
+        path = path[::-1]
+        
+        print(path)
         
