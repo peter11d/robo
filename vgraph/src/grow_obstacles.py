@@ -328,7 +328,7 @@ if __name__ == "__main__":
                     point_dict[point] = smallest_dist
             
 
-        a = point_dict[tuple(goal)]
+        a = point_dict[tuple(goal_in_cm)]
         b = point_dict[a]        
         print (a)
         print (b)
