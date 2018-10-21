@@ -281,6 +281,15 @@ if __name__ == "__main__":
         
         #Set of all points
         points = [point for line in lines for point in line]
+        print(lines)
+        print(type(lines))
+        print(lines[0])
+        print(type(lines[0]))
+        print()
+        print(points)
+        print(points[0])
+        print(type(points[0]))
+        
         vertices = set(points)
         
         point_dict = {} # Will be used to store prev point on shortest path
