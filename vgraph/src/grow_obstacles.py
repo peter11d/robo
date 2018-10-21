@@ -316,5 +316,5 @@ if __name__ == "__main__":
             
             
         print(goal)
-        prtin(type(goal))
+        print(type(goal))
         
