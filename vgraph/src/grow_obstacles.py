@@ -325,7 +325,7 @@ if __name__ == "__main__":
                 curr = dist_dict[smallest_dist] + get_distance(smallest_dist, point)
                 if dist_dict[point] > curr:
                     dist_dict[point] = curr
-                    point_dict[point] = smallest_dict
+                    point_dict[point] = smallest_dist
             
             
         print(goal)
