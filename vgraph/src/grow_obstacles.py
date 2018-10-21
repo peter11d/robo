@@ -308,7 +308,9 @@ if __name__ == "__main__":
                     neighbors.append(v1)
             neighbors = set(neighbors)
             
-            for point in neighbors if point in vertices:
+            for point in neighbors:
+                if point not in vertices:
+                    continue
                 curr = dist_dict[smallest_dict] + get_distance(smallest_dist, point)
                 if dist_dict[point] > curr:
                     dist_dict[point] = curr
