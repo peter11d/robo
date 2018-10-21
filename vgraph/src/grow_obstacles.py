@@ -339,6 +339,12 @@ if __name__ == "__main__":
                 break
             
         path = path[::-1]
+        path_lines = []
+        
+        for i in range(len(path)-1):
+            path_lines.append([list(path[i]), list(path[i+1])])
         
         print(path)
+        for line in path_lines:
+            line_markers.add_marker(line, True)
         
