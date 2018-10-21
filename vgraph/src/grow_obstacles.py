@@ -27,7 +27,7 @@ class Markers(object):
         self.current_id = 0
 
         
-    def add_marker(self, coordinates):
+    def add_marker(self, coordinates, isShortest):
         # Create a new line_strip and add in basic info
         line_strip = Marker()
         line_strip.header.frame_id = 'map'
@@ -55,6 +55,11 @@ class Markers(object):
             line_strip.points.append(point)
         
 
+        if isShortest:
+            line_strip.scale.x = 0.3
+            line_strip.color.r = 0
+            line_strip.color.b = 1.0
+        
         # Add the line_strip to the MarkerArray
         self.markerArray.markers.append(line_strip)
 
@@ -224,6 +229,11 @@ def get_vgraph_lines(possible_lines, avoid_lines):
 
     return v_graph_lines
     
+
+def get_distance(l1, l2):
+    #Returns the distance between two points
+    return math.pow(math.pow(l1[0] - l2[0], 2) + math.pow(l1[1] - l1[1], 2), 0.5)
+
     
 if __name__ == "__main__":
 	obstacles = load_obstacles("../data/world_obstacles.txt")
@@ -242,7 +252,7 @@ if __name__ == "__main__":
             coord.append(coord[0])
 
             # Draw the border
-            line_markers.add_marker(coord)
+            line_markers.add_marker(coord, False)
 
         # Generate all possible lines that could occur
         possible_lines = []
@@ -260,4 +270,51 @@ if __name__ == "__main__":
         vgraph_lines = get_vgraph_lines(possible_lines, convex_lines + obstacle_lines)
 
         for line in vgraph_lines:
-            line_markers.add_marker(line)
+            line_markers.add_marker(line, False)
+            
+        # List of all flipped tuples
+        flipped = [line[::-1] for line in vgraph_lines]
+        # Set of all lines with both possible start vertices
+        lines = vgraph_lines + flipped
+        
+        #Modified Dijkstra's
+        
+        #Set of all points
+        vertices = set([point for line in lines for point in line])
+        points = vertices.copy()
+        
+        point_dict = {} # Will be used to store prev point on shortest path
+        dist_dict = {} # Will be used to store the dist getting to each point
+        
+        for vertex in vertices:
+            point_dict[vertex] = None
+            dist_dict[vertex] = sys.maxsize
+        
+        start = (0,0)
+        
+        dist_dict[start] = 0
+        
+        while len(vertices) > 0:
+            smallest_dist = min(dist_dict, key=dist_dict.get)
+            
+            vertices.remove(smallest_dist)
+                
+            # Find neighbors of shortest_dist point
+            neighbors = []
+            for v1, v2 in lines:
+                if v1 == smallest_dist:
+                    neighbors.append(v2)
+                elif v2 == smallest_dist:
+                    neighbors.append(v1)
+            neighbors = set(neighbors)
+            
+            for point in neighbors if point in vertices:
+                curr = dist_dict[smallest_dict] + get_distance(smallest_dist, point)
+                if dist_dict[point] > curr:
+                    dist_dict[point] = curr
+                    point_dict[point] = smallest_dict
+            
+            
+        print(goal)
+        prtin(type(goal))
+        
