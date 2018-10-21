@@ -291,6 +291,7 @@ if __name__ == "__main__":
             dist_dict[vertex] = sys.maxsize
         
         start = (0.0,0.0)
+        vertices.add(start)
         
         dist_dict[start] = 0
         
