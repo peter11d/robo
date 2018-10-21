@@ -298,6 +298,9 @@ if __name__ == "__main__":
         while len(vertices) > 0:
             smallest_dist = min(dist_dict, key=dist_dict.get)
             
+            print(smallest_dict)
+            print(smallest_dict in vertices)
+            
             vertices.remove(smallest_dist)
                 
             # Find neighbors of shortest_dist point
