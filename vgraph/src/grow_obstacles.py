@@ -280,8 +280,8 @@ if __name__ == "__main__":
         #Modified Dijkstra's
         
         #Set of all points
-        vertices = set([point for line in lines for point in line])
-        points = vertices.copy()
+        points = [point for line in lines for point in line]
+        vertices = set(points)
         
         point_dict = {} # Will be used to store prev point on shortest path
         dist_dict = {} # Will be used to store the dist getting to each point
