@@ -2,12 +2,12 @@
 
 import numpy as np
 import rospy
+import math
+import sys
 import roslib; roslib.load_manifest('visualization_marker_tutorials')
 from visualization_msgs.msg import Marker, MarkerArray
 from geometry_msgs.msg import Point
-import math
 from scipy.spatial import ConvexHull
-import sys
 from collections import defaultdict
 
 class Markers(object):
@@ -99,6 +99,7 @@ def load_obstacles(object_path):
 
     
 def load_goal(goal_path):
+    #Function that loads the goal
 	with open(goal_path) as f:
 		line = f.readline()
 		goal = list(map(int, line.strip().split(' ')))
@@ -145,7 +146,7 @@ def get_b(vertex, m):
     return y - (m * x)
 
 def intersects(l1, l2):
-    ''''Returns if two lines l1, l2 intersect'''
+    #Returns if two lines l1, l2 intersect
     
     v1, v2 = l1
     v3, v4 = l2
@@ -237,115 +238,111 @@ def get_distance(l1, l2):
 
     
 if __name__ == "__main__":
-	obstacles = load_obstacles("../data/world_obstacles.txt")
-	goal = load_goal("../data/goal.txt")
-        start = [0, 0]
+    obstacles = load_obstacles("../data/world_obstacles.txt")
+    goal = load_goal("../data/goal.txt")
+    start = [0, 0]
 
-        obstacles_in_cm = [np.divide(np.array(obstacle, 'float'), 100).tolist() for obstacle in obstacles]
-        goal_in_cm = np.divide(np.array(goal, 'float'), 100).tolist()
-        start_in_cm = [0.0, 0.0]
+    obstacles_in_cm = [np.divide(np.array(obstacle, 'float'), 100).tolist() for obstacle in obstacles]
+    goal_in_cm = np.divide(np.array(goal, 'float'), 100).tolist()
+    start_in_cm = [0.0, 0.0]
 
-        convexhull_coords = get_obstacles_convexhull_points(obstacles_in_cm)
+    convexhull_coords = get_obstacles_convexhull_points(obstacles_in_cm)
 
-        line_markers = Markers()
-        for coord in convexhull_coords:
-            # Add the first point to complete the border
-            coord.append(coord[0])
+    line_markers = Markers()
+    for coord in convexhull_coords:
+        # Add the first point to complete the border
+        coord.append(coord[0])
 
-            # Draw the border
-            line_markers.add_marker(coord, False)
+        # Draw the border
+        line_markers.add_marker(coord, False)
 
-        t_lines = []
-        for coord in convexhull_coords:
-            for i in range(len(coord) - 1):
-                t_lines.append((coord[i], coord[i+1]))
+    t_lines = []
+    for coord in convexhull_coords:
+        for i in range(len(coord) - 1):
+            t_lines.append((coord[i], coord[i+1]))
 
-        #print(obstacle_lines)
-
-        # Generate all possible lines that could occur
-        possible_lines = []
-        for i, hull_v in enumerate(convexhull_coords):
-            for v1 in hull_v:
-                for v2 in [vertex for hull_v in convexhull_coords[0:i] + convexhull_coords[i+1:] for vertex in hull_v] + [goal_in_cm] + [start_in_cm]:
-                    possible_lines.append((v1, v2))
+    # Generate all possible lines that could occur
+    possible_lines = []
+    for i, hull_v in enumerate(convexhull_coords):
+        for v1 in hull_v:
+            for v2 in [vertex for hull_v in convexhull_coords[0:i] + convexhull_coords[i+1:] for vertex in hull_v] + [goal_in_cm] + [start_in_cm]:
+                possible_lines.append((v1, v2))
 
 
-        # Get the lines that make up the border of grown obstacles
-        convex_lines = [(v1, v2) for hull_v in convexhull_coords for i1, v1 in enumerate(hull_v) for i2, v2 in enumerate(hull_v) if i1 + 1 == i2]
-        # Get the lines of the obstacles border
-        obstacle_lines =  [(v1, v2) for obstacle_v in obstacles for v1 in obstacle_v for v2 in obstacle_v if obstacle_v.index(v1) < obstacle_v.index(v2) or (v1 == obstacle_v[-1] and v2 == obstacle_v[0])]
+    # Get the lines that make up the border of grown obstacles
+    convex_lines = [(v1, v2) for hull_v in convexhull_coords for i1, v1 in enumerate(hull_v) for i2, v2 in enumerate(hull_v) if i1 + 1 == i2]
+    # Get the lines of the obstacles border
+    obstacle_lines =  [(v1, v2) for obstacle_v in obstacles for v1 in obstacle_v for v2 in obstacle_v if obstacle_v.index(v1) < obstacle_v.index(v2) or (v1 == obstacle_v[-1] and v2 == obstacle_v[0])]
+    
+    vgraph_lines = get_vgraph_lines(possible_lines, convex_lines + obstacle_lines)
+
+    for line in vgraph_lines:
+        line_markers.add_marker(line, False)
+
+    vgraph_lines = t_lines + vgraph_lines
+    # List of all flipped tuples
+    flipped = [line[::-1] for line in vgraph_lines]
+    # Set of all lines with both possible start vertices
+    lines = vgraph_lines + flipped
+    
+    #Modified Dijkstra's
+    
+    #Set of all points
+    vertices = set([tuple(point) for line in lines for point in line])
+
+    # Neighbors
+    neighbors = defaultdict(list)
+    for line in lines:
+        v1, v2 = line
+        neighbors[tuple(v1)].append(v2)
+    
+    prev_point = {}  # Will be used to store prev point on shortest path
+    dist_point = {}  # Will be used to store the dist getting to each point
+    
+    for key, value in neighbors.items():
+        prev_point[key] = None
+        dist_point[key] = float('inf')
+
+
+    available_points = {}
+    start = (0.0,0.0)
+    available_points[start] = 0
+    
+    dist_point[start] = 0
+    seen = set(start)
+    
+    while len(available_points) > 0:
+        curr = min(available_points, key=lambda k: dist_point[k])
+        curr_neighbors = neighbors[curr]
+        del available_points[curr]
+        seen.add(curr)
         
-        vgraph_lines = get_vgraph_lines(possible_lines, convex_lines + obstacle_lines)
+        for point in curr_neighbors:
+            distance = dist_point[curr] + get_distance(curr, point)
+            if dist_point[tuple(point)] > distance:
+                dist_point[tuple(point)] = distance
+                prev_point[tuple(point)] = curr
+                if tuple(point) not in seen:
+                    available_points[tuple(point)] = distance
 
-        for line in vgraph_lines:
-            line_markers.add_marker(line, False)
-
-        print(vgraph_lines[0])
-        print(t_lines[0])
-
-        vgraph_lines = t_lines + vgraph_lines
-        # List of all flipped tuples
-        flipped = [line[::-1] for line in vgraph_lines]
-        # Set of all lines with both possible start vertices
-        lines = vgraph_lines + flipped
+    path = []
+    curr_point = tuple(goal_in_cm)
+    
+    while True:
+        path.append(curr_point)
+        if curr_point != start:
+            curr_point = prev_point[curr_point]
+        else:
+            break
         
-        #Modified Dijkstra's
-        
-        #Set of all points
-        vertices = set([tuple(point) for line in lines for point in line])
-
-        # Neighbors
-        neighbors = defaultdict(list)
-        for line in lines:
-            v1, v2 = line
-            neighbors[tuple(v1)].append(v2)
-        
-        prev_point = {}  # Will be used to store prev point on shortest path
-        dist_point = {}  # Will be used to store the dist getting to each point
-        
-        for key, value in neighbors.items():
-            prev_point[key] = None
-            dist_point[key] = float('inf')
-
-
-        available_points = {}
-        start = (0.0,0.0)
-        available_points[start] = 0
-        
-        dist_point[start] = 0
-        seen = set(start)
-        
-        while len(available_points) > 0:
-            curr = min(available_points, key=lambda k: dist_point[k])
-            curr_neighbors = neighbors[curr]
-            del available_points[curr]
-            seen.add(curr)
-            
-            for point in curr_neighbors:
-                distance = dist_point[curr] + get_distance(curr, point)
-                if dist_point[tuple(point)] > distance:
-                    dist_point[tuple(point)] = distance
-                    prev_point[tuple(point)] = curr
-                    if tuple(point) not in seen:
-                        available_points[tuple(point)] = distance
-
-        path = []
-        curr_point = tuple(goal_in_cm)
-        
-        while True:
-            path.append(curr_point)
-            if curr_point != start:
-                curr_point = prev_point[curr_point]
-            else:
-                break
-            
-        path = path[::-1]
-        path_lines = []
-        
-        for i in range(len(path)-1):
-            path_lines.append([list(path[i]), list(path[i+1])])
-        
-        print(path)
-        for line in path_lines:
-            line_markers.add_marker(line, True)
-        
+    path = path[::-1]
+    path_lines = []
+    
+    #Display all possible path_lines
+    for i in range(len(path)-1):
+        path_lines.append([list(path[i]), list(path[i+1])])
+    
+    print(path)
+    for line in path_lines:
+        line_markers.add_marker(line, True)
+    
