@@ -2,4 +2,4 @@
 
 cd
 git pull
-mv vgraph/src/grow_obstacles.py catkin_ws/src/vgraph/src/grow_obstacles.py
+mv vgraph/src/complete_shortest_path.py catkin_ws/src/vgraph/src/complete_shortest_path.py

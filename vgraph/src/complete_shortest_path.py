@@ -276,33 +276,34 @@ if __name__ == "__main__":
     
     vgraph_lines = get_vgraph_lines(possible_lines, convex_lines + obstacle_lines)
 
+    #Display all possible path lines
     for line in vgraph_lines:
         line_markers.add_marker(line, False)
 
     vgraph_lines = t_lines + vgraph_lines
-    # List of all flipped tuples
     flipped = [line[::-1] for line in vgraph_lines]
+    
     # Set of all lines with both possible start vertices
     lines = vgraph_lines + flipped
     
-    #Modified Dijkstra's
+    #########################
+    ## Modified Dijkstra's ##
+    #########################
     
     #Set of all points
     vertices = set([tuple(point) for line in lines for point in line])
 
-    # Neighbors
     neighbors = defaultdict(list)
     for line in lines:
         v1, v2 = line
         neighbors[tuple(v1)].append(v2)
     
-    prev_point = {}  # Will be used to store prev point on shortest path
-    dist_point = {}  # Will be used to store the dist getting to each point
+    prev_point = {}  # Store prev point on shortest path
+    dist_point = {}  # Store the shortest dist getting to each point
     
     for key, value in neighbors.items():
         prev_point[key] = None
         dist_point[key] = float('inf')
-
 
     available_points = {}
     start = (0.0,0.0)
@@ -342,7 +343,7 @@ if __name__ == "__main__":
     for i in range(len(path)-1):
         path_lines.append([list(path[i]), list(path[i+1])])
     
-    print(path)
+    # Display the shortest path
     for line in path_lines:
         line_markers.add_marker(line, True)
     
