@@ -298,80 +298,36 @@ if __name__ == "__main__":
         neighbors = defaultdict(list)
         for line in lines:
             v1, v2 = line
-            #print(v1)
-            #print(v2)
             neighbors[tuple(v1)].append(v2)
         
-        prev_point = {}
-        dist_point = {}
-        #point_dict = {} # Will be used to store prev point on shortest path
-        #dist_dict = {} # Will be used to store the dist getting to each point
+        prev_point = {}  # Will be used to store prev point on shortest path
+        dist_point = {}  # Will be used to store the dist getting to each point
         
         for key, value in neighbors.items():
             prev_point[key] = None
             dist_point[key] = float('inf')
-            #point_dict[vertex] = None
-            #dist_dict[vertex] = sys.maxsize
+
 
         available_points = {}
         start = (0.0,0.0)
         available_points[start] = 0
-        #vertices.add(start)
         
-        #dist_dict[start] = 0
         dist_point[start] = 0
         seen = set(start)
         
         while len(available_points) > 0:
-            #curr = available_points.pop()
             curr = min(available_points, key=lambda k: dist_point[k])
             curr_neighbors = neighbors[curr]
             del available_points[curr]
             seen.add(curr)
-            #print(curr)
-            #print(curr_neighbors)
-            #if curr == start:
-            #    print(curr_neighbors)
-            #seen.add(curr)
-            
-            #smallest_dist = min(dist_dict, key=lambda k: dist_dict[k] if k in vertices else sys.maxsize)
-            
-            #print(smallest_dist)
-            #print(smallest_dist in vertices)
-            
-            #vertices.remove(smallest_dist)
-                
-            # Find neighbors of shortest_dist point
-            #neighbors = []
-            #for v1, v2 in lines:
-            #    if tuple(v1) == smallest_dist and tuple(v2) != smallest_dist:
-            #        #print("1 {} {}".format(v1, v2))
-            #        neighbors.append(tuple(v2))
-            #    elif tuple(v2) == smallest_dist and tuple(v1) != smallest_dist:
-            #        #print("2 {} {}".format(v1, v2))
-            #        neighbors.append(tuple(v1))
-            #neighbors = set(neighbors)
-            #print("NEIGHBORS")
-            #print(neighbors)
             
             for point in curr_neighbors:
-                #print("POINTS")
-                #print(point)
-                #if point not in vertices:
-                #    print("How did this happen?")
-                #    continue
                 distance = dist_point[curr] + get_distance(curr, point)
                 if dist_point[tuple(point)] > distance:
                     dist_point[tuple(point)] = distance
                     prev_point[tuple(point)] = curr
                     if tuple(point) not in seen:
                         available_points[tuple(point)] = distance
-                    #dist_dict[point] = curr
-                    #point_dict[point] = smallest_dist
-                #if tuple(point) not in seen:
-                    #available_points.append(tuple(point))
-                    #seen.add(tuple(point))
-            
 
         path = []
         curr_point = tuple(goal_in_cm)
